@@ -1,0 +1,103 @@
+# Multi-Timeframe Analysis Engine Configuration
+# V2 Engineering Specification - First Build (Deterministic Core Only)
+
+engine:
+  version: "2.0.0"
+  schema_version: "2.0"
+
+# Analysis style: swing (D1 -> H4 -> H1) or intraday (H4 -> H1 -> M15)
+style: "swing"
+
+# Timeframe hierarchy - explicit configuration
+timeframes:
+  context: ["D1"]
+  structure: ["H4"]
+  decision: "H1"
+  confirmation: []
+
+# Swing detection parameters
+swing:
+  left_bars: 5
+  right_bars: 5
+  # Equal high/low comparison policy: strict, equal_right, equal_left
+  equal_policy: "strict"
+
+# Indicators
+indicators:
+  ema:
+    periods: [20, 50, 200]
+  rsi:
+    period: 14
+    overbought: 70
+    oversold: 30
+  atr:
+    period: 14
+
+# Fibonacci
+fibonacci:
+  ratios: [0.382, 0.500, 0.618]
+  # Minimum move size as ATR multiple for valid anchor leg
+  min_leg_atr_multiple: 1.0
+
+# Breakout buffer
+breakout:
+  n_points: 0
+  atr_fraction: 0.05
+
+# Zone clustering
+zones:
+  # ATR multiplier for zone clustering tolerance
+  atr_tolerance_min: 0.25
+  atr_tolerance_max: 0.50
+
+# Round numbers
+round_numbers:
+  # Step size in pips (e.g., 100 pips = 0.0100 for 5-digit pairs)
+  step_pips: 100
+  # Number of levels above/below current price to include
+  levels_around_price: 5
+
+# Sessions (timezone-aware)
+sessions:
+  timezone: "UTC"
+  definitions:
+    asia:
+      start: "00:00"
+      end: "09:00"
+    london:
+      start: "08:00"
+      end: "17:00"
+    new_york:
+      start: "13:00"
+      end: "22:00"
+
+# CSV Import
+csv_import:
+  # Broker timezone offset from UTC (hours, can be negative)
+  # Use broker_offset_hours for fixed offset, or set use_ea_timestamps=true for EA mode
+  broker_offset_hours: 2
+  # Whether the CSV includes a currently forming (incomplete) candle at the end
+  drop_last_row: true
+  # Expected columns in CSV
+  columns:
+    time: "time"
+    open: "open"
+    high: "high"
+    low: "low"
+    close: "close"
+    tick_volume: "tick_volume"
+    spread: "spread"
+    real_volume: "real_volume"
+
+# Replay
+replay:
+  # Number of recent candles to include in LLM context (per timeframe)
+  recent_candles_per_timeframe: 30
+  # Calculation history (bars needed for indicators)
+  calculation_history_bars: 1000
+
+# Symbol metadata (will be overridden by CSV data if available)
+symbol:
+  # Default for EURUSD
+  digits: 5
+  point: 0.00001

@@ -1,0 +1,1228 @@
+{
+  "schema_version": "2.0",
+  "engine_version": "2.0.0",
+  "analysis_engine_version": "2.0.0",
+  "pattern_engine_version": "none",
+  "prompt_version": "none",
+  "model_name": "none",
+  "model_version": "none",
+  "symbol": "EURUSD",
+  "style": "swing",
+  "decision_timeframe": "H1",
+  "decision_candle_close_time": "2025-11-30T22:00:00Z",
+  "as_of": "2025-11-30T22:00:00Z",
+  "data_source": {
+    "provider": "MT5",
+    "volume_type": "tick_volume",
+    "feed": "MT5_CSV",
+    "broker": "unknown",
+    "broker_utc_offset_hours": 2.0,
+    "weekly_open_verified": false
+  },
+  "price": 1.0502,
+  "session": {
+    "active": []
+  },
+  "previous_day": {},
+  "previous_week": {},
+  "round_numbers": {
+    "levels": [
+      1.0,
+      1.01,
+      1.02,
+      1.03,
+      1.04,
+      1.05,
+      1.06,
+      1.07,
+      1.08,
+      1.09,
+      1.1
+    ],
+    "current_price": 1.0502,
+    "step_pips": 100,
+    "symbol_point": 1e-05
+  },
+  "timeframes": {
+    "D1": {
+      "latest_closed_candle": {
+        "id": "D1_CANDLE_EURUSD_20251130T220000Z",
+        "symbol": "EURUSD",
+        "timeframe": "D1",
+        "time_open": "2025-11-29T22:00:00Z",
+        "time_close": "2025-11-30T22:00:00Z",
+        "open": 1.05,
+        "high": 1.055,
+        "low": 1.048,
+        "close": 1.052,
+        "tick_volume": 10000,
+        "spread_points": 10,
+        "real_volume": 0,
+        "source": "MT5"
+      },
+      "structure": {
+        "timeframe": "D1",
+        "direction": "unknown",
+        "external": {
+          "direction": "unknown"
+        },
+        "internal": {
+          "direction": "unknown",
+          "swings": []
+        },
+        "all_events": []
+      },
+      "zones": [
+        {
+          "id": "D1_ZONE_SUPPORT_EURUSD_0000_v1",
+          "timeframe": "D1",
+          "role": "support",
+          "low": 1.0,
+          "high": 1.0,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.819233Z",
+          "origin_ids": [
+            "ROUND_1.0"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "D1_ZONE_SUPPORT_EURUSD_0001_v1",
+          "timeframe": "D1",
+          "role": "support",
+          "low": 1.01,
+          "high": 1.01,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.819252Z",
+          "origin_ids": [
+            "ROUND_1.01"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "D1_ZONE_SUPPORT_EURUSD_0002_v1",
+          "timeframe": "D1",
+          "role": "support",
+          "low": 1.02,
+          "high": 1.02,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.819262Z",
+          "origin_ids": [
+            "ROUND_1.02"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "D1_ZONE_SUPPORT_EURUSD_0003_v1",
+          "timeframe": "D1",
+          "role": "support",
+          "low": 1.03,
+          "high": 1.03,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.819269Z",
+          "origin_ids": [
+            "ROUND_1.03"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "D1_ZONE_SUPPORT_EURUSD_0004_v1",
+          "timeframe": "D1",
+          "role": "support",
+          "low": 1.04,
+          "high": 1.04,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.819277Z",
+          "origin_ids": [
+            "ROUND_1.04"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "D1_ZONE_SUPPORT_EURUSD_0005_v1",
+          "timeframe": "D1",
+          "role": "support",
+          "low": 1.05,
+          "high": 1.05,
+          "status": "active",
+          "touch_count": 1,
+          "first_seen": "2026-10-07T14:19:35.819287Z",
+          "last_touched": "2025-11-30T22:00:00Z",
+          "origin_ids": [
+            "ROUND_1.05"
+          ],
+          "supporting_ids": [
+            "D1_CANDLE_EURUSD_20251130T220000Z"
+          ]
+        },
+        {
+          "id": "D1_ZONE_SUPPORT_EURUSD_0006_v1",
+          "timeframe": "D1",
+          "role": "support",
+          "low": 1.06,
+          "high": 1.06,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.819293Z",
+          "origin_ids": [
+            "ROUND_1.06"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "D1_ZONE_SUPPORT_EURUSD_0007_v1",
+          "timeframe": "D1",
+          "role": "support",
+          "low": 1.07,
+          "high": 1.07,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.819302Z",
+          "origin_ids": [
+            "ROUND_1.07"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "D1_ZONE_SUPPORT_EURUSD_0008_v1",
+          "timeframe": "D1",
+          "role": "support",
+          "low": 1.08,
+          "high": 1.08,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.819309Z",
+          "origin_ids": [
+            "ROUND_1.08"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "D1_ZONE_SUPPORT_EURUSD_0009_v1",
+          "timeframe": "D1",
+          "role": "support",
+          "low": 1.09,
+          "high": 1.09,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.819316Z",
+          "origin_ids": [
+            "ROUND_1.09"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "D1_ZONE_SUPPORT_EURUSD_0010_v1",
+          "timeframe": "D1",
+          "role": "support",
+          "low": 1.1,
+          "high": 1.1,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.819323Z",
+          "origin_ids": [
+            "ROUND_1.1"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "D1_ZONE_RESISTANCE_EURUSD_0011_v1",
+          "timeframe": "D1",
+          "role": "resistance",
+          "low": 1.0,
+          "high": 1.0,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.819216Z",
+          "origin_ids": [
+            "ROUND_1.0"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "D1_ZONE_RESISTANCE_EURUSD_0012_v1",
+          "timeframe": "D1",
+          "role": "resistance",
+          "low": 1.01,
+          "high": 1.01,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.819246Z",
+          "origin_ids": [
+            "ROUND_1.01"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "D1_ZONE_RESISTANCE_EURUSD_0013_v1",
+          "timeframe": "D1",
+          "role": "resistance",
+          "low": 1.02,
+          "high": 1.02,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.819257Z",
+          "origin_ids": [
+            "ROUND_1.02"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "D1_ZONE_RESISTANCE_EURUSD_0014_v1",
+          "timeframe": "D1",
+          "role": "resistance",
+          "low": 1.03,
+          "high": 1.03,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.819266Z",
+          "origin_ids": [
+            "ROUND_1.03"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "D1_ZONE_RESISTANCE_EURUSD_0015_v1",
+          "timeframe": "D1",
+          "role": "resistance",
+          "low": 1.04,
+          "high": 1.04,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.819273Z",
+          "origin_ids": [
+            "ROUND_1.04"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "D1_ZONE_RESISTANCE_EURUSD_0016_v1",
+          "timeframe": "D1",
+          "role": "resistance",
+          "low": 1.05,
+          "high": 1.05,
+          "status": "active",
+          "touch_count": 1,
+          "first_seen": "2026-10-07T14:19:35.819283Z",
+          "last_touched": "2025-11-30T22:00:00Z",
+          "origin_ids": [
+            "ROUND_1.05"
+          ],
+          "supporting_ids": [
+            "D1_CANDLE_EURUSD_20251130T220000Z"
+          ]
+        },
+        {
+          "id": "D1_ZONE_RESISTANCE_EURUSD_0017_v1",
+          "timeframe": "D1",
+          "role": "resistance",
+          "low": 1.06,
+          "high": 1.06,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.819290Z",
+          "origin_ids": [
+            "ROUND_1.06"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "D1_ZONE_RESISTANCE_EURUSD_0018_v1",
+          "timeframe": "D1",
+          "role": "resistance",
+          "low": 1.07,
+          "high": 1.07,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.819296Z",
+          "origin_ids": [
+            "ROUND_1.07"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "D1_ZONE_RESISTANCE_EURUSD_0019_v1",
+          "timeframe": "D1",
+          "role": "resistance",
+          "low": 1.08,
+          "high": 1.08,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.819306Z",
+          "origin_ids": [
+            "ROUND_1.08"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "D1_ZONE_RESISTANCE_EURUSD_0020_v1",
+          "timeframe": "D1",
+          "role": "resistance",
+          "low": 1.09,
+          "high": 1.09,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.819312Z",
+          "origin_ids": [
+            "ROUND_1.09"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "D1_ZONE_RESISTANCE_EURUSD_0021_v1",
+          "timeframe": "D1",
+          "role": "resistance",
+          "low": 1.1,
+          "high": 1.1,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.819319Z",
+          "origin_ids": [
+            "ROUND_1.1"
+          ],
+          "supporting_ids": []
+        }
+      ],
+      "ema": {
+        "ema_20": null,
+        "ema_50": null,
+        "ema_200": null,
+        "price_vs_emaema_20": "unknown",
+        "price_vs_emaema_50": "unknown",
+        "price_vs_emaema_200": "unknown"
+      },
+      "candles": [
+        {
+          "id": "D1_CANDLE_EURUSD_20251130T220000Z",
+          "symbol": "EURUSD",
+          "timeframe": "D1",
+          "time_open": "2025-11-29T22:00:00Z",
+          "time_close": "2025-11-30T22:00:00Z",
+          "open": 1.05,
+          "high": 1.055,
+          "low": 1.048,
+          "close": 1.052,
+          "tick_volume": 10000,
+          "spread_points": 10,
+          "real_volume": 0,
+          "source": "MT5"
+        }
+      ],
+      "features": [
+        {
+          "candle_id": "D1_CANDLE_EURUSD_20251130T220000Z",
+          "is_doji": false,
+          "is_bullish_engulfing": false,
+          "is_bearish_engulfing": false,
+          "is_hammer": false,
+          "is_shooting_star": false,
+          "is_inside_bar": false,
+          "is_strong_bullish_close": false,
+          "is_strong_bearish_close": false,
+          "is_pin_bar_bullish": false,
+          "is_pin_bar_bearish": false,
+          "body_ratio": 0.28571428571429025,
+          "close_location": 0.5714285714285805,
+          "upper_wick_ratio": 0.4285714285714195,
+          "lower_wick_ratio": 0.28571428571429025
+        }
+      ],
+      "events": []
+    },
+    "H1": {
+      "latest_closed_candle": {
+        "id": "H1_CANDLE_EURUSD_20251130T220000Z",
+        "symbol": "EURUSD",
+        "timeframe": "H1",
+        "time_open": "2025-11-30T21:00:00Z",
+        "time_close": "2025-11-30T22:00:00Z",
+        "open": 1.05,
+        "high": 1.0505,
+        "low": 1.0495,
+        "close": 1.0502,
+        "tick_volume": 2000,
+        "spread_points": 10,
+        "real_volume": 0,
+        "source": "MT5"
+      },
+      "structure": {
+        "timeframe": "H1",
+        "direction": "unknown",
+        "external": {
+          "direction": "unknown"
+        },
+        "internal": {
+          "direction": "unknown",
+          "swings": []
+        },
+        "all_events": []
+      },
+      "zones": [
+        {
+          "id": "H1_ZONE_SUPPORT_EURUSD_0000_v1",
+          "timeframe": "H1",
+          "role": "support",
+          "low": 1.0,
+          "high": 1.0,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.829829Z",
+          "origin_ids": [
+            "ROUND_1.0"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H1_ZONE_SUPPORT_EURUSD_0001_v1",
+          "timeframe": "H1",
+          "role": "support",
+          "low": 1.01,
+          "high": 1.01,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.829839Z",
+          "origin_ids": [
+            "ROUND_1.01"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H1_ZONE_SUPPORT_EURUSD_0002_v1",
+          "timeframe": "H1",
+          "role": "support",
+          "low": 1.02,
+          "high": 1.02,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.829845Z",
+          "origin_ids": [
+            "ROUND_1.02"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H1_ZONE_SUPPORT_EURUSD_0003_v1",
+          "timeframe": "H1",
+          "role": "support",
+          "low": 1.03,
+          "high": 1.03,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.829851Z",
+          "origin_ids": [
+            "ROUND_1.03"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H1_ZONE_SUPPORT_EURUSD_0004_v1",
+          "timeframe": "H1",
+          "role": "support",
+          "low": 1.04,
+          "high": 1.04,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.829864Z",
+          "origin_ids": [
+            "ROUND_1.04"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H1_ZONE_SUPPORT_EURUSD_0005_v1",
+          "timeframe": "H1",
+          "role": "support",
+          "low": 1.05,
+          "high": 1.05,
+          "status": "active",
+          "touch_count": 1,
+          "first_seen": "2026-10-07T14:19:35.829870Z",
+          "last_touched": "2025-11-30T22:00:00Z",
+          "origin_ids": [
+            "ROUND_1.05"
+          ],
+          "supporting_ids": [
+            "H1_CANDLE_EURUSD_20251130T220000Z"
+          ]
+        },
+        {
+          "id": "H1_ZONE_SUPPORT_EURUSD_0006_v1",
+          "timeframe": "H1",
+          "role": "support",
+          "low": 1.06,
+          "high": 1.06,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.829876Z",
+          "origin_ids": [
+            "ROUND_1.06"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H1_ZONE_SUPPORT_EURUSD_0007_v1",
+          "timeframe": "H1",
+          "role": "support",
+          "low": 1.07,
+          "high": 1.07,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.829881Z",
+          "origin_ids": [
+            "ROUND_1.07"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H1_ZONE_SUPPORT_EURUSD_0008_v1",
+          "timeframe": "H1",
+          "role": "support",
+          "low": 1.08,
+          "high": 1.08,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.829887Z",
+          "origin_ids": [
+            "ROUND_1.08"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H1_ZONE_SUPPORT_EURUSD_0009_v1",
+          "timeframe": "H1",
+          "role": "support",
+          "low": 1.09,
+          "high": 1.09,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.829892Z",
+          "origin_ids": [
+            "ROUND_1.09"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H1_ZONE_SUPPORT_EURUSD_0010_v1",
+          "timeframe": "H1",
+          "role": "support",
+          "low": 1.1,
+          "high": 1.1,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.829898Z",
+          "origin_ids": [
+            "ROUND_1.1"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H1_ZONE_RESISTANCE_EURUSD_0011_v1",
+          "timeframe": "H1",
+          "role": "resistance",
+          "low": 1.0,
+          "high": 1.0,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.829811Z",
+          "origin_ids": [
+            "ROUND_1.0"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H1_ZONE_RESISTANCE_EURUSD_0012_v1",
+          "timeframe": "H1",
+          "role": "resistance",
+          "low": 1.01,
+          "high": 1.01,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.829835Z",
+          "origin_ids": [
+            "ROUND_1.01"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H1_ZONE_RESISTANCE_EURUSD_0013_v1",
+          "timeframe": "H1",
+          "role": "resistance",
+          "low": 1.02,
+          "high": 1.02,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.829842Z",
+          "origin_ids": [
+            "ROUND_1.02"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H1_ZONE_RESISTANCE_EURUSD_0014_v1",
+          "timeframe": "H1",
+          "role": "resistance",
+          "low": 1.03,
+          "high": 1.03,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.829848Z",
+          "origin_ids": [
+            "ROUND_1.03"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H1_ZONE_RESISTANCE_EURUSD_0015_v1",
+          "timeframe": "H1",
+          "role": "resistance",
+          "low": 1.04,
+          "high": 1.04,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.829861Z",
+          "origin_ids": [
+            "ROUND_1.04"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H1_ZONE_RESISTANCE_EURUSD_0016_v1",
+          "timeframe": "H1",
+          "role": "resistance",
+          "low": 1.05,
+          "high": 1.05,
+          "status": "active",
+          "touch_count": 1,
+          "first_seen": "2026-10-07T14:19:35.829867Z",
+          "last_touched": "2025-11-30T22:00:00Z",
+          "origin_ids": [
+            "ROUND_1.05"
+          ],
+          "supporting_ids": [
+            "H1_CANDLE_EURUSD_20251130T220000Z"
+          ]
+        },
+        {
+          "id": "H1_ZONE_RESISTANCE_EURUSD_0017_v1",
+          "timeframe": "H1",
+          "role": "resistance",
+          "low": 1.06,
+          "high": 1.06,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.829873Z",
+          "origin_ids": [
+            "ROUND_1.06"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H1_ZONE_RESISTANCE_EURUSD_0018_v1",
+          "timeframe": "H1",
+          "role": "resistance",
+          "low": 1.07,
+          "high": 1.07,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.829878Z",
+          "origin_ids": [
+            "ROUND_1.07"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H1_ZONE_RESISTANCE_EURUSD_0019_v1",
+          "timeframe": "H1",
+          "role": "resistance",
+          "low": 1.08,
+          "high": 1.08,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.829884Z",
+          "origin_ids": [
+            "ROUND_1.08"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H1_ZONE_RESISTANCE_EURUSD_0020_v1",
+          "timeframe": "H1",
+          "role": "resistance",
+          "low": 1.09,
+          "high": 1.09,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.829889Z",
+          "origin_ids": [
+            "ROUND_1.09"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H1_ZONE_RESISTANCE_EURUSD_0021_v1",
+          "timeframe": "H1",
+          "role": "resistance",
+          "low": 1.1,
+          "high": 1.1,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.829895Z",
+          "origin_ids": [
+            "ROUND_1.1"
+          ],
+          "supporting_ids": []
+        }
+      ],
+      "ema": {
+        "ema_20": null,
+        "ema_50": null,
+        "ema_200": null,
+        "price_vs_emaema_20": "unknown",
+        "price_vs_emaema_50": "unknown",
+        "price_vs_emaema_200": "unknown"
+      },
+      "candles": [
+        {
+          "id": "H1_CANDLE_EURUSD_20251130T220000Z",
+          "symbol": "EURUSD",
+          "timeframe": "H1",
+          "time_open": "2025-11-30T21:00:00Z",
+          "time_close": "2025-11-30T22:00:00Z",
+          "open": 1.05,
+          "high": 1.0505,
+          "low": 1.0495,
+          "close": 1.0502,
+          "tick_volume": 2000,
+          "spread_points": 10,
+          "real_volume": 0,
+          "source": "MT5"
+        }
+      ],
+      "features": [
+        {
+          "candle_id": "H1_CANDLE_EURUSD_20251130T220000Z",
+          "is_doji": false,
+          "is_bullish_engulfing": false,
+          "is_bearish_engulfing": false,
+          "is_hammer": true,
+          "is_shooting_star": false,
+          "is_inside_bar": false,
+          "is_strong_bullish_close": false,
+          "is_strong_bearish_close": false,
+          "is_pin_bar_bullish": true,
+          "is_pin_bar_bearish": false,
+          "body_ratio": 0.2,
+          "close_location": 0.7,
+          "upper_wick_ratio": 0.3,
+          "lower_wick_ratio": 0.5
+        }
+      ],
+      "events": []
+    },
+    "H4": {
+      "latest_closed_candle": {
+        "id": "H4_CANDLE_EURUSD_20251130T220000Z",
+        "symbol": "EURUSD",
+        "timeframe": "H4",
+        "time_open": "2025-11-30T18:00:00Z",
+        "time_close": "2025-11-30T22:00:00Z",
+        "open": 1.05,
+        "high": 1.052,
+        "low": 1.049,
+        "close": 1.051,
+        "tick_volume": 5000,
+        "spread_points": 10,
+        "real_volume": 0,
+        "source": "MT5"
+      },
+      "structure": {
+        "timeframe": "H4",
+        "direction": "unknown",
+        "external": {
+          "direction": "unknown"
+        },
+        "internal": {
+          "direction": "unknown",
+          "swings": []
+        },
+        "all_events": []
+      },
+      "zones": [
+        {
+          "id": "H4_ZONE_SUPPORT_EURUSD_0000_v1",
+          "timeframe": "H4",
+          "role": "support",
+          "low": 1.0,
+          "high": 1.0,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.830603Z",
+          "origin_ids": [
+            "ROUND_1.0"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H4_ZONE_SUPPORT_EURUSD_0001_v1",
+          "timeframe": "H4",
+          "role": "support",
+          "low": 1.01,
+          "high": 1.01,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.830614Z",
+          "origin_ids": [
+            "ROUND_1.01"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H4_ZONE_SUPPORT_EURUSD_0002_v1",
+          "timeframe": "H4",
+          "role": "support",
+          "low": 1.02,
+          "high": 1.02,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.830620Z",
+          "origin_ids": [
+            "ROUND_1.02"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H4_ZONE_SUPPORT_EURUSD_0003_v1",
+          "timeframe": "H4",
+          "role": "support",
+          "low": 1.03,
+          "high": 1.03,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.830625Z",
+          "origin_ids": [
+            "ROUND_1.03"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H4_ZONE_SUPPORT_EURUSD_0004_v1",
+          "timeframe": "H4",
+          "role": "support",
+          "low": 1.04,
+          "high": 1.04,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.830665Z",
+          "origin_ids": [
+            "ROUND_1.04"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H4_ZONE_SUPPORT_EURUSD_0005_v1",
+          "timeframe": "H4",
+          "role": "support",
+          "low": 1.05,
+          "high": 1.05,
+          "status": "active",
+          "touch_count": 1,
+          "first_seen": "2026-10-07T14:19:35.830670Z",
+          "last_touched": "2025-11-30T22:00:00Z",
+          "origin_ids": [
+            "ROUND_1.05"
+          ],
+          "supporting_ids": [
+            "H4_CANDLE_EURUSD_20251130T220000Z"
+          ]
+        },
+        {
+          "id": "H4_ZONE_SUPPORT_EURUSD_0006_v1",
+          "timeframe": "H4",
+          "role": "support",
+          "low": 1.06,
+          "high": 1.06,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.830675Z",
+          "origin_ids": [
+            "ROUND_1.06"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H4_ZONE_SUPPORT_EURUSD_0007_v1",
+          "timeframe": "H4",
+          "role": "support",
+          "low": 1.07,
+          "high": 1.07,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.830681Z",
+          "origin_ids": [
+            "ROUND_1.07"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H4_ZONE_SUPPORT_EURUSD_0008_v1",
+          "timeframe": "H4",
+          "role": "support",
+          "low": 1.08,
+          "high": 1.08,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.830686Z",
+          "origin_ids": [
+            "ROUND_1.08"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H4_ZONE_SUPPORT_EURUSD_0009_v1",
+          "timeframe": "H4",
+          "role": "support",
+          "low": 1.09,
+          "high": 1.09,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.830691Z",
+          "origin_ids": [
+            "ROUND_1.09"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H4_ZONE_SUPPORT_EURUSD_0010_v1",
+          "timeframe": "H4",
+          "role": "support",
+          "low": 1.1,
+          "high": 1.1,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.830696Z",
+          "origin_ids": [
+            "ROUND_1.1"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H4_ZONE_RESISTANCE_EURUSD_0011_v1",
+          "timeframe": "H4",
+          "role": "resistance",
+          "low": 1.0,
+          "high": 1.0,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.830597Z",
+          "origin_ids": [
+            "ROUND_1.0"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H4_ZONE_RESISTANCE_EURUSD_0012_v1",
+          "timeframe": "H4",
+          "role": "resistance",
+          "low": 1.01,
+          "high": 1.01,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.830610Z",
+          "origin_ids": [
+            "ROUND_1.01"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H4_ZONE_RESISTANCE_EURUSD_0013_v1",
+          "timeframe": "H4",
+          "role": "resistance",
+          "low": 1.02,
+          "high": 1.02,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.830617Z",
+          "origin_ids": [
+            "ROUND_1.02"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H4_ZONE_RESISTANCE_EURUSD_0014_v1",
+          "timeframe": "H4",
+          "role": "resistance",
+          "low": 1.03,
+          "high": 1.03,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.830622Z",
+          "origin_ids": [
+            "ROUND_1.03"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H4_ZONE_RESISTANCE_EURUSD_0015_v1",
+          "timeframe": "H4",
+          "role": "resistance",
+          "low": 1.04,
+          "high": 1.04,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.830661Z",
+          "origin_ids": [
+            "ROUND_1.04"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H4_ZONE_RESISTANCE_EURUSD_0016_v1",
+          "timeframe": "H4",
+          "role": "resistance",
+          "low": 1.05,
+          "high": 1.05,
+          "status": "active",
+          "touch_count": 1,
+          "first_seen": "2026-10-07T14:19:35.830668Z",
+          "last_touched": "2025-11-30T22:00:00Z",
+          "origin_ids": [
+            "ROUND_1.05"
+          ],
+          "supporting_ids": [
+            "H4_CANDLE_EURUSD_20251130T220000Z"
+          ]
+        },
+        {
+          "id": "H4_ZONE_RESISTANCE_EURUSD_0017_v1",
+          "timeframe": "H4",
+          "role": "resistance",
+          "low": 1.06,
+          "high": 1.06,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.830673Z",
+          "origin_ids": [
+            "ROUND_1.06"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H4_ZONE_RESISTANCE_EURUSD_0018_v1",
+          "timeframe": "H4",
+          "role": "resistance",
+          "low": 1.07,
+          "high": 1.07,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.830678Z",
+          "origin_ids": [
+            "ROUND_1.07"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H4_ZONE_RESISTANCE_EURUSD_0019_v1",
+          "timeframe": "H4",
+          "role": "resistance",
+          "low": 1.08,
+          "high": 1.08,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.830683Z",
+          "origin_ids": [
+            "ROUND_1.08"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H4_ZONE_RESISTANCE_EURUSD_0020_v1",
+          "timeframe": "H4",
+          "role": "resistance",
+          "low": 1.09,
+          "high": 1.09,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.830688Z",
+          "origin_ids": [
+            "ROUND_1.09"
+          ],
+          "supporting_ids": []
+        },
+        {
+          "id": "H4_ZONE_RESISTANCE_EURUSD_0021_v1",
+          "timeframe": "H4",
+          "role": "resistance",
+          "low": 1.1,
+          "high": 1.1,
+          "status": "active",
+          "touch_count": 0,
+          "first_seen": "2026-10-07T14:19:35.830694Z",
+          "origin_ids": [
+            "ROUND_1.1"
+          ],
+          "supporting_ids": []
+        }
+      ],
+      "ema": {
+        "ema_20": null,
+        "ema_50": null,
+        "ema_200": null,
+        "price_vs_emaema_20": "unknown",
+        "price_vs_emaema_50": "unknown",
+        "price_vs_emaema_200": "unknown"
+      },
+      "candles": [
+        {
+          "id": "H4_CANDLE_EURUSD_20251130T220000Z",
+          "symbol": "EURUSD",
+          "timeframe": "H4",
+          "time_open": "2025-11-30T18:00:00Z",
+          "time_close": "2025-11-30T22:00:00Z",
+          "open": 1.05,
+          "high": 1.052,
+          "low": 1.049,
+          "close": 1.051,
+          "tick_volume": 5000,
+          "spread_points": 10,
+          "real_volume": 0,
+          "source": "MT5"
+        }
+      ],
+      "features": [
+        {
+          "candle_id": "H4_CANDLE_EURUSD_20251130T220000Z",
+          "is_doji": false,
+          "is_bullish_engulfing": false,
+          "is_bearish_engulfing": false,
+          "is_hammer": false,
+          "is_shooting_star": false,
+          "is_inside_bar": false,
+          "is_strong_bullish_close": false,
+          "is_strong_bearish_close": false,
+          "is_pin_bar_bullish": false,
+          "is_pin_bar_bearish": false,
+          "body_ratio": 0.33333333333328397,
+          "close_location": 0.666666666666642,
+          "upper_wick_ratio": 0.333333333333358,
+          "lower_wick_ratio": 0.333333333333358
+        }
+      ],
+      "events": []
+    }
+  },
+  "pattern_features": [],
+  "structural_events": [],
+  "data_quality": {
+    "provider": "MT5",
+    "volume_type": "tick_volume",
+    "feed": "MT5_CSV",
+    "broker": "unknown",
+    "broker_utc_offset_hours": 2.0,
+    "weekly_open_verified": false
+  }
+}
