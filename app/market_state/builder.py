@@ -68,7 +68,7 @@ class MarketState(BaseModel):
     timeframes: dict[str, TimeframeState] = {}
 
     # Pattern features (deterministic geometry)
-    pattern_features: list = []
+    pattern_features: list[PatternFeature] = []
 
     # Structural events across all timeframes
     structural_events: list[StructuralEvent] = []

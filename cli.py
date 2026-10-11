@@ -244,5 +244,67 @@ def inspect(snapshot_file: str):
         click.echo(f"    Indicators: EMA={list(tf_data.get('ema', {}).keys())}, RSI={tf_data.get('rsi')}, ATR={tf_data.get('atr')}")
 
 
+@cli.command()
+@click.argument("snapshot_file", type=click.Path(exists=True, file_okay=True, dir_okay=False))
+@click.option("--max-retries", type=int, default=None, help="Retries with grounding feedback")
+@click.option("--reject-dir", type=click.Path(file_okay=False, dir_okay=True), default=None,
+              help="Where to store rejected attempts")
+@click.option("--output", type=click.Path(file_okay=True, dir_okay=False), default=None,
+              help="Write the analysis JSON here (stdout if omitted)")
+@click.option("--show-prompt", is_flag=True, help="Print the prompt and exit (no API key needed)")
+def interpret(snapshot_file: str, max_retries, reject_dir, output, show_prompt):
+    """Interpret a saved market-state snapshot with the LLM (grounded)."""
+    from app.market_state.builder import MarketState
+    from app.llm.prompt import SYSTEM_PROMPT, build_user_prompt
+
+    state = MarketState.model_validate_json(Path(snapshot_file).read_text())
+
+    if show_prompt:
+        click.echo(SYSTEM_PROMPT)
+        click.echo("\n" + "=" * 70 + "\n")
+        click.echo(build_user_prompt(state))
+        return
+
+    try:
+        from app.llm.client import get_llm_client
+        from app.llm.analysis import interpret_market_state
+
+        client = get_llm_client()
+        result = interpret_market_state(
+            state, client, max_retries=max_retries, reject_dir=reject_dir
+        )
+
+        if result.analysis is not None:
+            payload = result.analysis.model_dump(mode="json")
+            text = json.dumps(payload, indent=2)
+            if output:
+                with open(output, "w") as f:
+                    f.write(text)
+                click.echo(f"[OK] Analysis saved to {output}")
+            else:
+                click.echo(text)
+
+        if result.validation and result.validation.warnings:
+            for w in result.validation.warnings:
+                click.echo(f"[WARN] {w.code}: {w.message}")
+
+        if result.ok:
+            click.echo(f"[OK] Grounded analysis ({result.attempts} attempt(s))")
+        else:
+            click.echo(f"[FAIL] Not grounded after {result.attempts} attempt(s): {result.error}", err=True)
+            if result.validation:
+                for e in result.validation.errors:
+                    click.echo(f"  [ERROR] {e.code}: {e.message}", err=True)
+            for f in result.rejected_files:
+                click.echo(f"  rejected: {f}", err=True)
+            raise click.Abort()
+
+    except click.Abort:
+        raise
+    except Exception as e:
+        click.echo(f"\n[ERROR] {e}", err=True)
+        raise click.Abort()
+
+
 if __name__ == "__main__":
     cli()

@@ -126,6 +126,17 @@ mt5:
   broker_offset_hours: null # null = auto-detect from a live tick
   symbol_suffix: ""         # e.g. ".a" if your broker suffixes symbols
 
+# LLM interpretation (Phase 2)
+# The API key is read from the LLM_API_KEY environment variable; the model from
+# LLM_MODEL. Nothing secret is stored here.
+llm:
+  base_url: "https://api.openai.com/v1"   # any OpenAI-compatible endpoint
+  model: ""                               # set via LLM_MODEL env var
+  temperature: 0.0
+  timeout: 60.0
+  max_retries: 2                          # retries with grounding feedback
+  reject_dir: "rejected_analyses"         # where failed attempts are stored
+
 # Symbol metadata (will be overridden by CSV data if available)
 symbol:
   # Default for EURUSD

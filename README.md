@@ -26,6 +26,11 @@ contains the deterministic core and the data pipeline that feeds it.
 - **Round Numbers**: generated from symbol metadata (handles JPY pairs correctly)
 - **Trading Sessions**: timezone-aware (Asia/London/New York) with overlap support
 - **Candlestick Features**: doji, engulfing, pin bars, inside bars, strong closes
+- **Pattern Geometry**: double top/bottom, head & shoulders (+ inverse),
+  ascending/descending/symmetrical triangles, rising/falling wedges,
+  rectangles, channels - each with a causal forming → confirmed → failed state
+- **LLM Interpretation**: grounded, schema-validated reads of the market state,
+  with a retry-with-feedback loop and rejected-attempt storage
 - **Historical Replay**: causal replay engine with future-data leak prevention
 
 ## Data Sources
@@ -212,12 +217,35 @@ Each analysis produces a complete JSON document containing:
 }
 ```
 
-## Next Steps (Phase 2+)
+## LLM Interpretation (Phase 2)
 
-- Pattern geometry features (double top/bottom, flags, wedges, H&S)
-- LLM interpretation with structured output schema + grounding validation
-- Evaluation framework (scenarios, baselines, hallucination metrics)
-- Production hardening (EA push mode, storage, audit trail)
+The model interprets the canonical market state - it never invents facts.
+Anything it claims must cite an evidence ID that exists in the state, and every
+level it names must correspond to a real level. Ungrounded output is rejected
+and retried with the validation errors fed back.
+
+```bash
+export LLM_API_KEY="..."        # any OpenAI-compatible endpoint
+export LLM_MODEL="gpt-4o-mini"
+
+# inspect the prompt without a key
+python cli.py interpret state.json --show-prompt
+
+# run the grounded interpretation
+python cli.py interpret state.json --output analysis.json
+```
+
+Output follows a strict schema (`bias`, `market_phase`, `summary`,
+`timeframe_read`, `patterns`, `key_levels`, `scenarios`,
+`what_changes_the_read`, `unclear`). Failed attempts are written to
+`rejected_analyses/`.
+
+## Next Steps (Phase 3+)
+
+- Evaluation framework: chronological splits, scenario activation/invalidation,
+  MFE/MAE, baseline comparison, hallucination-rate metrics
+- Production hardening: scheduled triggers, storage, audit trail
+- More patterns: flags/pennants, breakout/retest as first-class features
 
 ## Design Principles
 

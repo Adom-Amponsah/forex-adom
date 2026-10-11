@@ -54,30 +54,34 @@
 
 ---
 
-## Phase 2: Pattern Geometry & LLM Integration
+## Phase 2: Pattern Geometry & LLM Integration (COMPLETED ✅)
 
 ### 2.1 Pattern Feature Engine
-- [ ] Double top/bottom detection (deterministic geometry)
-- [ ] Head & shoulders / inverse H&S
+- [x] Double top/bottom detection (deterministic geometry)
+- [x] Head & shoulders / inverse H&S
 - [ ] Flag/pennant patterns
-- [ ] Wedge patterns (rising/falling)
-- [ ] Triangle patterns (ascending/descending/symmetrical)
-- [ ] Rectangle/channel patterns
-- [ ] Breakout/retest detection
-- [ ] Pattern state machine (forming → confirmed → failed)
+- [x] Wedge patterns (rising/falling)
+- [x] Triangle patterns (ascending/descending/symmetrical)
+- [x] Rectangle/channel patterns
+- [ ] Breakout/retest detection (as first-class features)
+- [x] Pattern state machine (forming → confirmed → failed)
+- [x] Evidence IDs (swing IDs) + deterministic pattern IDs
+- [x] Wired into the canonical market state (per-timeframe + aggregate)
 
 ### 2.2 LLM Integration
-- [ ] System prompt engineering (top-down reading, evidence citation)
-- [ ] Structured output schema (Pydantic models for AI response)
-- [ ] Evidence ID referencing in AI output
-- [ ] Scenario generation with typed conditions
-- [ ] Validation layer:
+- [x] System prompt engineering (top-down reading, evidence citation)
+- [x] Structured output schema (Pydantic models for AI response)
+- [x] Evidence ID referencing in AI output
+- [x] Scenario generation with typed conditions
+- [x] Validation layer:
   - Schema validation (Pydantic)
   - Semantic grounding (price/ID/timestamp validation)
   - Pattern evidence validation
-  - Derived value traceability
-- [ ] Retry logic with validation feedback
-- [ ] Rejected analysis storage
+  - Derived value traceability (levels must match real levels)
+- [x] Retry logic with validation feedback
+- [x] Rejected analysis storage (`rejected_analyses/`)
+- [x] CLI: `interpret` (+ `--show-prompt` to inspect without an API key)
+- [ ] Baseline comparison (moved to Phase 3)
 
 ### 2.3 AI Output Schema
 ```json

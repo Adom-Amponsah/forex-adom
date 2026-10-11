@@ -125,6 +125,16 @@ class Mt5Config(BaseModel):
     symbol_suffix: str = ""
 
 
+class LlmConfig(BaseModel):
+    base_url: str = "https://api.openai.com/v1"
+    # Model name; override via the LLM_MODEL environment variable
+    model: str = ""
+    temperature: float = 0.0
+    timeout: float = 60.0
+    max_retries: int = 2
+    reject_dir: str = "rejected_analyses"
+
+
 class SymbolConfig(BaseModel):
     digits: int = 5
     point: float = 0.00001
@@ -147,6 +157,7 @@ class Config(BaseModel):
     csv_import: CSVImportConfig = Field(default_factory=CSVImportConfig)
     oanda: OandaConfig = Field(default_factory=OandaConfig)
     mt5: Mt5Config = Field(default_factory=Mt5Config)
+    llm: LlmConfig = Field(default_factory=LlmConfig)
     replay: ReplayConfig = Field(default_factory=ReplayConfig)
     symbol: SymbolConfig = Field(default_factory=SymbolConfig)
 

@@ -178,10 +178,11 @@ python cli.py replay   EURUSD .\output --provider synthetic --max-snapshots 20
 ## 4. Command reference
 
 ```
-python cli.py validate SYMBOL [--provider mt5|oanda|csv|synthetic]
-python cli.py analyze  SYMBOL DECISION_TIME [--provider ...] [--output FILE]
-python cli.py replay   SYMBOL OUTPUT_DIR [--provider ...] [--start-idx N] [--max-snapshots N]
-python cli.py inspect  SNAPSHOT_FILE.json
+python cli.py validate  SYMBOL [--provider mt5|oanda|csv|synthetic]
+python cli.py analyze   SYMBOL DECISION_TIME [--provider ...] [--output FILE]
+python cli.py replay    SYMBOL OUTPUT_DIR [--provider ...] [--start-idx N] [--max-snapshots N]
+python cli.py inspect   SNAPSHOT_FILE.json
+python cli.py interpret SNAPSHOT_FILE.json [--output FILE] [--show-prompt]
 ```
 
 Common options:
@@ -206,7 +207,35 @@ python cli.py replay EURUSD .\output --provider mt5 --start-idx 200 --max-snapsh
 
 ---
 
-## 5. Troubleshooting
+## 5. Interpret with the LLM (optional)
+
+The engine can hand the canonical market state to an LLM and get back a
+**grounded** read - the model may only cite evidence IDs that exist, and every
+level it names must be a real level. Ungrounded output is rejected and retried.
+
+```powershell
+$env:LLM_API_KEY="sk-..."                 # any OpenAI-compatible endpoint
+$env:LLM_MODEL="gpt-4o-mini"
+# optional: $env:LLM_BASE_URL="https://api.openai.com/v1"
+
+# 1. produce a market state
+python cli.py analyze EURUSD 2026-10-09T20:00:00Z --provider mt5 --output state.json
+
+# 2. see exactly what would be sent (no key needed)
+python cli.py interpret state.json --show-prompt
+
+# 3. run the grounded interpretation
+python cli.py interpret state.json --output analysis.json
+```
+
+- Output schema: `bias`, `market_phase`, `summary`, `timeframe_read`, `patterns`,
+  `key_levels`, `scenarios`, `what_changes_the_read`, `unclear`.
+- Rejected attempts are saved to `rejected_analyses/` for auditing.
+- No key? `--show-prompt` still works (it doesn't call the model).
+
+---
+
+## 6. Troubleshooting
 
 | Symptom | Cause | Fix |
 |---|---|---|
@@ -221,7 +250,7 @@ python cli.py replay EURUSD .\output --provider mt5 --start-idx 200 --max-snapsh
 
 ---
 
-## 6. Output
+## 7. Output
 
 - `analyze` → a single canonical market-state JSON (or stdout).
 - `replay` → `OUTPUT_DIR/SYMBOL_style_TF_TIMESTAMP_v2.0.0.json`, one per decision candle.
@@ -231,7 +260,7 @@ Inspect any snapshot with `python cli.py inspect <file.json>`.
 
 ---
 
-## 7. Running on another machine / server
+## 8. Running on another machine / server
 
 The **engine** is portable Python. Only the **data source** has requirements:
 
@@ -247,7 +276,7 @@ Switching is a one-line change (`--provider oanda`) — no engine changes.
 
 ---
 
-## 8. Security
+## 9. Security
 
 - **Never commit credentials.** The repo reads `OANDA_API_TOKEN`,
   `MT5_LOGIN`, `MT5_PASSWORD`, `MT5_SERVER` from the environment only.

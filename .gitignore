@@ -41,6 +41,7 @@ Thumbs.db
 # Project specific
 output/
 *.log
+rejected_analyses/
 
 # Data files (optional - keep sample data)
 # data/*.csv
