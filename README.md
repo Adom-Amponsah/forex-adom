@@ -7,6 +7,9 @@ document with full traceability and no look-ahead. The long-term goal is for an
 LLM to *interpret* that state (never to invent it); this repository currently
 contains the deterministic core and the data pipeline that feeds it.
 
+> **New here?** See [RUNNING.md](RUNNING.md) for a step-by-step guide to
+> installing, connecting a data source, and running analyses.
+
 ## Features
 
 - **Pluggable data providers**: OANDA v20 REST (live broker feed), MT5 CSV
