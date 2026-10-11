@@ -1,11 +1,11 @@
 """
 Market structure analysis: HH/HL/LH/LL classification, protected levels, BOS/CHoCH.
 """
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional
 from enum import Enum
 from app.data.models import Candle, Timeframe, make_event_id
-from app.structure.swings import Swing, SwingType, get_confirmed_swings_up_to
+from app.structure.swings import Swing, SwingType
 from app.config.settings import config
 from pydantic import BaseModel, ConfigDict
 
@@ -231,74 +231,76 @@ def calculate_break_buffer(
 def detect_structural_events(
     candles: list[Candle],
     labeled_swings: list[LabeledSwing],
-    protected_high: Optional[LabeledSwing],
-    protected_low: Optional[LabeledSwing],
-    direction: StructureDirection,
     atr_values: list[Optional[float]],
     symbol_point: float,
     event_counter: int,
 ) -> tuple[list[StructuralEvent], int]:
     """
-    Detect BOS/CHoCH events.
-    
-    A structural break requires a CLOSED candle beyond the protected level + buffer.
+    Detect BOS/CHoCH events causally.
+
+    Every confirmed swing high/low is a reference level. For each reference we
+    scan *forward* from the swing's confirmation index and emit exactly one
+    event at the first closed candle whose close clears the level by more than
+    the breakout buffer. The with-trend/against-trend decision (BOS vs CHoCH)
+    uses only the structure that was known as of that break - never future
+    swings - so replay stays causal and a level cannot produce repeated events.
     """
+    ordered = sorted(labeled_swings, key=lambda ls: ls.swing.confirmation_index)
+
+    raw: list[tuple] = []
+    for ls in ordered:
+        conf_idx = ls.swing.confirmation_index
+        known = [x for x in ordered if x.swing.confirmation_index <= conf_idx]
+        direction_at = determine_structure_direction(known)
+
+        is_high = ls.swing.swing_type == SwingType.HIGH
+        level_price = ls.swing.price
+
+        for i in range(conf_idx + 1, len(candles)):
+            atr = atr_values[i] if i < len(atr_values) else None
+            buffer = calculate_break_buffer(
+                atr, symbol_point,
+                config.breakout.n_points,
+                config.breakout.atr_fraction,
+            )
+            candle = candles[i]
+
+            broke = candle.close > level_price + buffer if is_high else candle.close < level_price - buffer
+            if not broke:
+                continue
+
+            if is_high:
+                is_with_trend = (direction_at == StructureDirection.BULLISH)
+                event_type = EventType.BOS_BULLISH if is_with_trend else EventType.CHOCH_BULLISH
+            else:
+                is_with_trend = (direction_at == StructureDirection.BEARISH)
+                event_type = EventType.BOS_BEARISH if is_with_trend else EventType.CHOCH_BEARISH
+
+            raw.append((
+                event_type, candle, ls, level_price, buffer, is_with_trend,
+            ))
+            break
+
+    # Chronological order, then assign stable sequential IDs.
+    raw.sort(key=lambda r: (r[1].time_close, r[2].swing.id))
+
     events = []
     counter = event_counter
-    
-    # Map swing ID to labeled swing for reference
-    swing_by_id = {ls.swing.id: ls for ls in labeled_swings}
-    
-    for i, candle in enumerate(candles):
-        atr = atr_values[i] if i < len(atr_values) else None
-        buffer = calculate_break_buffer(
-            atr, symbol_point,
-            config.breakout.n_points,
-            config.breakout.atr_fraction
-        )
-        
-        # Check bullish break (close above protected high)
-        if protected_high:
-            level_price = protected_high.swing.price
-            if candle.close > level_price + buffer:
-                is_with_trend = (direction == StructureDirection.BULLISH)
-                event_type = EventType.BOS_BULLISH if is_with_trend else EventType.CHOCH_BULLISH
-                
-                events.append(StructuralEvent(
-                    id=make_event_id(candle.symbol, candle.timeframe, event_type.value, counter),
-                    type=event_type,
-                    timeframe=candle.timeframe,
-                    confirmation_candle_id=candle.id,
-                    confirmation_time=candle.time_close,
-                    reference_id=protected_high.swing.id,
-                    reference_price=level_price,
-                    break_price=candle.close,
-                    break_buffer=buffer,
-                    is_with_trend=is_with_trend,
-                ))
-                counter += 1
-        
-        # Check bearish break (close below protected low)
-        if protected_low:
-            level_price = protected_low.swing.price
-            if candle.close < level_price - buffer:
-                is_with_trend = (direction == StructureDirection.BEARISH)
-                event_type = EventType.BOS_BEARISH if is_with_trend else EventType.CHOCH_BEARISH
-                
-                events.append(StructuralEvent(
-                    id=make_event_id(candle.symbol, candle.timeframe, event_type.value, counter),
-                    type=event_type,
-                    timeframe=candle.timeframe,
-                    confirmation_candle_id=candle.id,
-                    confirmation_time=candle.time_close,
-                    reference_id=protected_low.swing.id,
-                    reference_price=level_price,
-                    break_price=candle.close,
-                    break_buffer=buffer,
-                    is_with_trend=is_with_trend,
-                ))
-                counter += 1
-    
+    for event_type, candle, ls, level_price, buffer, is_with_trend in raw:
+        events.append(StructuralEvent(
+            id=make_event_id(candle.symbol, candle.timeframe, event_type.value, counter),
+            type=event_type,
+            timeframe=candle.timeframe,
+            confirmation_candle_id=candle.id,
+            confirmation_time=candle.time_close,
+            reference_id=ls.swing.id,
+            reference_price=level_price,
+            break_price=candle.close,
+            break_buffer=buffer,
+            is_with_trend=is_with_trend,
+        ))
+        counter += 1
+
     return events, counter
 
 
@@ -345,9 +347,6 @@ def build_market_structure(
     events, new_counter = detect_structural_events(
         candles=candles,
         labeled_swings=labeled,
-        protected_high=protected_high,
-        protected_low=protected_low,
-        direction=direction,
         atr_values=atr_values,
         symbol_point=symbol_point,
         event_counter=event_counter,

@@ -1,14 +1,12 @@
 """
 Fibonacci retracement engine with deterministic anchoring.
 """
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional
 from enum import Enum
-from app.data.models import Candle, Timeframe
-from app.structure.swings import Swing, SwingType
-from app.structure.structure import LabeledSwing, StructureLabel
+from app.structure.swings import SwingType
+from app.structure.structure import LabeledSwing
 from app.config.settings import config
-from app.indicators.engine import calculate_atr
 from pydantic import BaseModel, ConfigDict
 
 

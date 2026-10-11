@@ -1,10 +1,9 @@
 """
 Trading session calculations with timezone awareness.
 """
-from datetime import datetime, timezone, time as dt_time
+from datetime import datetime, time as dt_time
 from typing import Optional
 import pytz
-from app.data.models import Candle
 from app.config.settings import config
 from pydantic import BaseModel, ConfigDict
 

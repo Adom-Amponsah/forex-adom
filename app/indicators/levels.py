@@ -1,126 +1,87 @@
 """
 Previous day/week levels and round numbers.
+
+Previous-period levels are derived from *closed* D1 candles relative to the
+decision time, using the broker's day/week boundaries. Nothing is read from the
+wall clock, and the "current" (incomplete) day is never included.
 """
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 from typing import Optional
-from app.data.models import Candle, Timeframe, SymbolMetadata
-from app.config.settings import config
+from app.data.models import Candle, SymbolMetadata
 from pydantic import BaseModel, ConfigDict
 
 
-class PreviousLevels(BaseModel):
-    """Previous day and week high/low levels."""
+class PreviousLevel(BaseModel):
+    """High/low for a single completed period (day or week)."""
     model_config = ConfigDict(frozen=True)
-    
-    previous_day_high: Optional[float] = None
-    previous_day_low: Optional[float] = None
-    previous_week_high: Optional[float] = None
-    previous_week_low: Optional[float] = None
-    # Source info
-    day_source_candle_id: Optional[str] = None
-    day_source_time: Optional[datetime] = None
-    week_source_candle_id: Optional[str] = None
-    week_source_time: Optional[datetime] = None
+
+    high: Optional[float] = None
+    low: Optional[float] = None
+    source_candle_id: Optional[str] = None
+    source_time: Optional[datetime] = None
 
 
-def get_broker_day_boundaries(
-    candles: list[Candle],
-    broker_offset_hours: float = 0.0,
-) -> list[tuple[datetime, datetime]]:
-    """
-    Get broker day boundaries (midnight in broker time).
-    
-    Returns list of (day_start_utc, day_end_utc) for each broker day.
-    """
-    if not candles:
-        return []
-    
-    boundaries = []
-    current_day = None
-    day_start = None
-    
-    for candle in candles:
-        # Convert candle close to broker time
-        broker_time = candle.time_close + timedelta(hours=broker_offset_hours)
-        candle_day = broker_time.date()
-        
-        if current_day is None:
-            current_day = candle_day
-            day_start = candle.time_close - timedelta(seconds=candle.timeframe.to_seconds())
-        elif candle_day != current_day:
-            # Day changed - record previous day boundary
-            day_end = candle.time_close - timedelta(seconds=candle.timeframe.to_seconds())
-            boundaries.append((day_start, day_end))
-            current_day = candle_day
-            day_start = candle.time_close - timedelta(seconds=candle.timeframe.to_seconds())
-    
-    # Add final day if we have candles
-    if day_start and candles:
-        day_end = candles[-1].time_close
-        boundaries.append((day_start, day_end))
-    
-    return boundaries
+def _broker_open_date(candle: Candle, broker_offset_hours: float):
+    """Broker-local date of a candle's open (the trading day it belongs to)."""
+    return (candle.time_open + timedelta(hours=broker_offset_hours)).date()
 
 
 def calculate_previous_levels(
     d1_candles: list[Candle],
+    as_of: datetime,
     broker_offset_hours: float = 0.0,
-) -> PreviousLevels:
+) -> tuple[PreviousLevel, PreviousLevel]:
     """
-    Calculate previous day and week high/low from D1 candles.
-    
-    Uses broker's daily candles (D1 timeframe) which should align with broker's day.
+    Compute the previous completed day and previous completed week from D1
+    candles that have already closed at `as_of`.
+
+    Returns (previous_day, previous_week).
     """
     if not d1_candles:
-        return PreviousLevels()
-    
-    # D1 candles should represent broker days
-    # Previous day = second to last D1 candle (last is current/forming)
-    # Previous week = find Monday of previous week
-    
-    prev_day_high = None
-    prev_day_low = None
-    prev_week_high = None
-    prev_week_low = None
-    day_source_id = None
-    day_source_time = None
-    week_source_id = None
-    week_source_time = None
-    
-    # Previous day
-    if len(d1_candles) >= 2:
-        prev_day_candle = d1_candles[-2]  # -1 is current day, -2 is previous
-        prev_day_high = prev_day_candle.high
-        prev_day_low = prev_day_candle.low
-        day_source_id = prev_day_candle.id
-        day_source_time = prev_day_candle.time_close
-    
-    # Previous week - find the D1 candle for Friday of previous week
-    # or calculate from last 5 D1 candles (Mon-Fri)
-    if len(d1_candles) >= 6:
-        # Last 5 complete days (excluding current)
-        week_candles = d1_candles[-6:-1]  # Previous 5 days
-        prev_week_high = max(c.high for c in week_candles)
-        prev_week_low = min(c.low for c in week_candles)
-        week_source_id = week_candles[0].id  # Monday
-        week_source_time = week_candles[0].time_close
-    
-    return PreviousLevels(
-        previous_day_high=prev_day_high,
-        previous_day_low=prev_day_low,
-        previous_week_high=prev_week_high,
-        previous_week_low=prev_week_low,
-        day_source_candle_id=day_source_id,
-        day_source_time=day_source_time,
-        week_source_candle_id=week_source_id,
-        week_source_time=week_source_time,
-    )
+        return PreviousLevel(), PreviousLevel()
+
+    # Only candles already closed at the decision time (causal).
+    closed = [c for c in d1_candles if c.time_close <= as_of]
+    if not closed:
+        return PreviousLevel(), PreviousLevel()
+
+    current_date = (as_of + timedelta(hours=broker_offset_hours)).date()
+
+    # --- previous day: most recent bar whose broker date precedes today ---
+    prior_days = [c for c in closed if _broker_open_date(c, broker_offset_hours) < current_date]
+    previous_day = PreviousLevel()
+    if prior_days:
+        bar = prior_days[-1]
+        previous_day = PreviousLevel(
+            high=bar.high,
+            low=bar.low,
+            source_candle_id=bar.id,
+            source_time=bar.time_close,
+        )
+
+    # --- previous week: Mon-Fri before the current week ---
+    current_week_start = current_date - timedelta(days=current_date.weekday())
+    prev_week_start = current_week_start - timedelta(days=7)
+    week_bars = [
+        c for c in closed
+        if prev_week_start <= _broker_open_date(c, broker_offset_hours) < current_week_start
+    ]
+    previous_week = PreviousLevel()
+    if week_bars:
+        previous_week = PreviousLevel(
+            high=max(c.high for c in week_bars),
+            low=min(c.low for c in week_bars),
+            source_candle_id=week_bars[0].id,
+            source_time=week_bars[0].time_close,
+        )
+
+    return previous_day, previous_week
 
 
 class RoundNumberLevels(BaseModel):
     """Round number levels around current price."""
     model_config = ConfigDict(frozen=True)
-    
+
     levels: list[float]
     current_price: float
     step_pips: int
@@ -135,29 +96,20 @@ def calculate_round_numbers(
 ) -> RoundNumberLevels:
     """
     Calculate round number levels.
-    
+
     For 5-digit pairs (point=0.00001), 100 pips = 0.0100
     For 3-digit JPY pairs (point=0.001), 100 pips = 0.100
     """
     point = symbol_meta.point
     digits = symbol_meta.digits
-    
-    # Calculate pip size
-    if digits in (3, 5):
-        pip_size = point * 10
-    else:
-        pip_size = point
-    
+
+    pip_size = point * 10 if digits in (3, 5) else point
     step = step_pips * pip_size
-    
-    # Find nearest round number below current price
+
     base = int(current_price / step) * step
-    
-    levels = []
-    for i in range(-levels_around, levels_around + 1):
-        level = base + (i * step)
-        levels.append(round(level, digits))
-    
+
+    levels = [round(base + (i * step), digits) for i in range(-levels_around, levels_around + 1)]
+
     return RoundNumberLevels(
         levels=levels,
         current_price=current_price,

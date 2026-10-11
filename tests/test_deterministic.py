@@ -4,10 +4,10 @@ Tests for reproducibility and deterministic behavior.
 import pytest
 from datetime import datetime, timezone, timedelta
 import numpy as np
-from app.data.models import Candle, Timeframe, SymbolMetadata, make_candle_id
+from app.data.models import Candle, Timeframe, make_candle_id
 from app.indicators.engine import calculate_ema, calculate_rsi, calculate_atr
-from app.structure.swings import find_swing_candidates, confirm_swings, get_confirmed_swings_up_to, SwingCandidate, EqualPolicy
-from app.structure.structure import classify_swings, determine_structure_direction, StructureLabel, StructureDirection
+from app.structure.swings import find_swing_candidates, get_confirmed_swings_up_to, EqualPolicy
+from app.structure.structure import classify_swings, determine_structure_direction, StructureDirection
 
 
 def create_test_candles(count: int, base_price: float = 1.1000, timeframe: Timeframe = Timeframe.H1) -> list[Candle]:
@@ -202,16 +202,25 @@ class TestMarketStructure:
 
 class TestReproducibility:
     """Test full pipeline reproducibility."""
-    
+
     def test_same_input_same_output(self):
-        """Same input data should produce identical market state."""
+        """Same input data should produce byte-identical market state."""
+        from app.data.synthetic_provider import SyntheticDataProvider
         from app.replay.engine import run_single_analysis
-        from app.data.csv_loader import load_multi_timeframe_csv
-        from app.data.timeframe_alignment import align_timeframes
-        from app.market_state.builder import MarketStateBuilder
-        
-        # This would need actual CSV files - placeholder for integration test
-        pass
+
+        provider = SyntheticDataProvider(seed=7, h1_bars=600)
+        tfs = [Timeframe.D1, Timeframe.H4, Timeframe.H1]
+        decision_close = provider.load("EURUSD", tfs)[Timeframe.H1].candles[-1].time_close
+
+        a = run_single_analysis(
+            provider, "EURUSD", decision_close, tfs, Timeframe.H1,
+            [Timeframe.D1], [Timeframe.H4],
+        )
+        b = run_single_analysis(
+            provider, "EURUSD", decision_close, tfs, Timeframe.H1,
+            [Timeframe.D1], [Timeframe.H4],
+        )
+        assert a == b
 
 
 class TestFutureData:

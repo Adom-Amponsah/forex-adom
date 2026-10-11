@@ -8,6 +8,9 @@ engine:
 # Analysis style: swing (D1 -> H4 -> H1) or intraday (H4 -> H1 -> M15)
 style: "swing"
 
+# Data source: "csv" (offline MT5 exports) or "oanda" (live OANDA v20 API)
+data_provider: "csv"
+
 # Timeframe hierarchy - explicit configuration
 timeframes:
   context: ["D1"]
@@ -95,6 +98,26 @@ replay:
   recent_candles_per_timeframe: 30
   # Calculation history (bars needed for indicators)
   calculation_history_bars: 1000
+
+# OANDA v20 API (used when data_provider: "oanda")
+# The personal access token is read from the OANDA_API_TOKEN environment
+# variable and is never stored in this file.
+oanda:
+  environment: "practice"   # "practice" or "live"
+  price: "M"                # "M" (mid), "B" (bid), "A" (ask)
+  default_bars: 5000        # bars to fetch per timeframe (paginates past 5000)
+  max_bars_per_request: 5000
+  request_timeout: 30.0
+
+# MetaTrader 5 terminal (used when data_provider: "mt5")
+# Requires the MetaTrader5 Python package (Windows only) and a running,
+# logged-in terminal. Credentials are read from the MT5_LOGIN /
+# MT5_PASSWORD / MT5_SERVER environment variables and are never stored here.
+mt5:
+  terminal_path: null       # null = auto-detect common install locations
+  default_bars: 5000
+  broker_offset_hours: null # null = auto-detect from a live tick
+  symbol_suffix: ""         # e.g. ".a" if your broker suffixes symbols
 
 # Symbol metadata (will be overridden by CSV data if available)
 symbol:

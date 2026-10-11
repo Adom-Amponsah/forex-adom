@@ -2,12 +2,9 @@
 Core data models for the MT5 Analysis Engine.
 Implements the MT5 Data Contract from the V2 specification.
 """
-from datetime import datetime
-from decimal import Decimal
+from datetime import datetime, timedelta
 from enum import Enum
-from typing import Optional
-from pydantic import BaseModel, Field, ConfigDict
-from uuid import uuid4
+from pydantic import BaseModel, ConfigDict
 
 
 class Timeframe(str, Enum):
@@ -157,6 +154,44 @@ def make_candle_id(symbol: str, timeframe: Timeframe, time_close: datetime) -> s
     return f"{timeframe.value}_CANDLE_{symbol}_{ts}"
 
 
+def make_candle(
+    symbol: str,
+    timeframe: Timeframe,
+    bar_open: datetime,
+    open: float,
+    high: float,
+    low: float,
+    close: float,
+    tick_volume: int = 0,
+    spread_points: int = 0,
+    real_volume: int = 0,
+    source: str = "MT5",
+) -> Candle:
+    """
+    Build a Candle from a bar's OPEN time.
+
+    Providers (MT5 exports, OANDA) timestamp bars by their open time. The close
+    time - the authoritative "this bar is known" timestamp used by all causal
+    logic - is derived as open + timeframe. Never pass a close time here.
+    """
+    time_close = bar_open + timedelta(seconds=timeframe.to_seconds())
+    return Candle(
+        id=make_candle_id(symbol, timeframe, time_close),
+        symbol=symbol,
+        timeframe=timeframe,
+        time_open=bar_open,
+        time_close=time_close,
+        open=open,
+        high=high,
+        low=low,
+        close=close,
+        tick_volume=tick_volume,
+        spread_points=spread_points,
+        real_volume=real_volume,
+        source=source,
+    )
+
+
 def make_swing_id(symbol: str, timeframe: Timeframe, swing_type: str, pivot_time: datetime, version: str = "v1") -> str:
     """Create deterministic swing ID."""
     ts = pivot_time.strftime("%Y%m%dT%H%M%SZ")
@@ -199,3 +234,14 @@ class DataSourceInfo(BaseModel):
     broker_utc_offset_hours: float = 0.0
     # Whether timestamps were verified against broker weekly open
     weekly_open_verified: bool = False
+
+
+class DataQualityReport(BaseModel):
+    """Data quality metadata for loaded candles."""
+    complete: bool = True
+    missing_bars: list[dict] = []
+    duplicate_bars: list[dict] = []
+    out_of_order_bars: list[dict] = []
+    source: str = "MT5_CSV"
+    total_bars: int = 0
+    date_range: tuple[datetime, datetime] | None = None

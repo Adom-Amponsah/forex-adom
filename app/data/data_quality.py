@@ -1,10 +1,7 @@
 """
 Data quality checks for MT5 candle data.
 """
-from datetime import datetime, timezone, timedelta
-from typing import Optional
-from app.data.csv_loader import DataQualityReport
-from app.data.models import Candle, Timeframe
+from app.data.models import Candle, Timeframe, DataQualityReport
 
 
 def check_candle_sequence(

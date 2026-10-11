@@ -2,7 +2,7 @@
 Timeframe alignment for historical replay.
 Ensures causal consistency: at decision time T, only candles closed by T are used.
 """
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional
 from app.data.models import Candle, Timeframe
 

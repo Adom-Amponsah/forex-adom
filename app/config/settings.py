@@ -3,10 +3,9 @@ Configuration settings for the MT5 Analysis Engine.
 Loads from config.yaml with environment variable overrides.
 """
 from pathlib import Path
-from typing import Any
+from typing import Optional
 import yaml
 from pydantic import BaseModel, Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class EngineConfig(BaseModel):
@@ -97,6 +96,24 @@ class ReplayConfig(BaseModel):
     calculation_history_bars: int = 1000
 
 
+class OandaConfig(BaseModel):
+    environment: str = "practice"
+    price: str = "M"
+    default_bars: int = 5000
+    max_bars_per_request: int = 5000
+    request_timeout: float = 30.0
+
+
+class Mt5Config(BaseModel):
+    # Path to terminal64.exe; None = auto-detect common install locations
+    terminal_path: Optional[str] = None
+    default_bars: int = 5000
+    # Broker server offset from UTC. None = auto-detect from a live tick.
+    broker_offset_hours: Optional[float] = None
+    # Broker symbol suffix, e.g. ".a" for "EURUSD.a"
+    symbol_suffix: str = ""
+
+
 class SymbolConfig(BaseModel):
     digits: int = 5
     point: float = 0.00001
@@ -105,6 +122,8 @@ class SymbolConfig(BaseModel):
 class Config(BaseModel):
     engine: EngineConfig = Field(default_factory=EngineConfig)
     style: str = "swing"
+    # Data source: "csv" (MT5 exports) or "oanda" (live broker API)
+    data_provider: str = "csv"
     timeframes: TimeframeConfig = Field(default_factory=TimeframeConfig)
     swing: SwingConfig = Field(default_factory=SwingConfig)
     indicators: IndicatorConfig = Field(default_factory=IndicatorConfig)
@@ -114,6 +133,8 @@ class Config(BaseModel):
     round_numbers: RoundNumberConfig = Field(default_factory=RoundNumberConfig)
     sessions: SessionsConfig = Field(default_factory=SessionsConfig)
     csv_import: CSVImportConfig = Field(default_factory=CSVImportConfig)
+    oanda: OandaConfig = Field(default_factory=OandaConfig)
+    mt5: Mt5Config = Field(default_factory=Mt5Config)
     replay: ReplayConfig = Field(default_factory=ReplayConfig)
     symbol: SymbolConfig = Field(default_factory=SymbolConfig)
 

@@ -3,21 +3,54 @@
 ## Phase 1: Deterministic Core (COMPLETED ✅)
 
 ### What's Done
-- CSV upload with broker timezone offset handling
-- Closed-candle filtering (drops forming candle)
+- Pluggable data providers: OANDA v20 REST (live), MT5 CSV (offline), synthetic (deterministic)
+- Closed-candle filtering (forming candle excluded by the source or dropped)
 - Swing detection (5L/5R) with confirmation delay
 - Market structure (HH/HL/LH/LL, internal/external, protected levels)
-- BOS/CHoCH with ATR-based breakout buffer
+- BOS/CHoCH with ATR-based breakout buffer (causal - no look-ahead)
 - S/R zones with ATR-normalized clustering & lifecycle
-- EMA(20/50/200), RSI(14), ATR(14) with proper warmup
+- EMA(20/50/200) with price relationships + slope direction, RSI(14), ATR(14)
 - Fibonacci (deterministic anchoring)
-- Previous day/week levels, round numbers (JPY-aware)
+- Previous day/week levels (broker-time, causal), round numbers (JPY-aware)
 - Trading sessions (Asia/London/NY, timezone-aware, overlaps)
 - Candlestick features (doji, engulfing, hammer, etc.)
 - Canonical market state JSON with full traceability
 - Historical replay engine (causal, no future leaks)
-- CLI: validate, replay, inspect, analyze
-- 12 determinism tests passing
+- CLI: validate, replay, inspect, analyze (provider-aware)
+
+---
+
+## Phase 1.5: Data Pipeline & Core Hardening (COMPLETED ✅)
+
+### Data pipeline
+- `DataProvider` abstraction; engine is source-agnostic
+- MT5 provider: reads candles from a running MetaTrader 5 terminal over IPC
+  (official `MetaTrader5` package) - real broker data, no exports; auto-detects
+  the broker UTC offset and drops the forming bar
+- OANDA v20 REST provider: candles endpoint, pagination past the 5000 cap,
+  `complete`-flag handling, symbol/granularity mapping, token via `OANDA_API_TOKEN`
+  (note: v20 REST is not available for OANDA Global Markets)
+- Corrected candle timestamp semantics: providers timestamp by bar **open**;
+  `time_close = open + timeframe` is the authoritative causal timestamp
+- CSV provider kept for offline back-compat
+- Deterministic synthetic provider for tests/offline (H1 path aggregated to H4/D1)
+
+### Correctness fixes
+- Determinism: zone sources no longer stamp `datetime.now()`; all timestamps
+  derive from the decision time (same input → byte-identical output)
+- Zone lifecycle: fixed the enum comparison so `broken`/`flipped` actually occur
+- Previous day/week: computed from closed D1 candles in broker time (were aliased)
+- Structural events: causal, one event per broken level, no look-ahead
+- EMA: fixed malformed `price_vs_emaema_20` keys; implemented slope direction
+- `data_quality` in the state is now scoped to the decision window (no future leak)
+- Packaging: `pip install -e .` works (setuptools package discovery)
+
+### Tests
+- Full-pipeline determinism (repeated runs identical)
+- Future-data invariance (append candles → past state unchanged)
+- Causal events (break strictly after reference swing confirms; no duplicate breaks)
+- Zone lifecycle transitions; previous-day causality
+- OANDA provider parsing/mapping (mocked HTTP)
 
 ---
 
@@ -102,6 +135,7 @@
 ## Phase 4: Production Hardening
 
 ### 4.1 Data Pipeline
+- [x] Live broker data via OANDA v20 REST API (replaces manual exports)
 - [ ] EA push mode (MQL5 Expert Advisor for live candles)
 - [ ] Secret key authentication for EA endpoint
 - [ ] VPS deployment guide
@@ -122,6 +156,9 @@
 ---
 
 ## CSV Data Preparation (Required for Testing)
+
+> **Note:** OANDA is now the primary data source (`--provider oanda`). The CSV
+> path below is retained for offline/back-compat use.
 
 ### MT5 Export Format
 Export from MT5: **File → Export → CSV** for each timeframe.

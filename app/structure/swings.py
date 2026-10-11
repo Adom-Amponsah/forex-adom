@@ -2,12 +2,10 @@
 Swing detection with confirmation logic.
 Implements 5-left / 5-right symmetric pivot window with explicit equal high/low policy.
 """
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import datetime
 from enum import Enum
 import numpy as np
 from app.data.models import Candle, Timeframe, make_swing_id
-from app.config.settings import config
 from pydantic import BaseModel, ConfigDict
 
 
@@ -32,6 +30,7 @@ class Swing(BaseModel):
     swing_type: SwingType
     pivot_index: int  # Index in the candle array
     pivot_time: datetime  # Close time of pivot candle
+    confirmation_index: int  # Candle index at which the swing became confirmed
     confirmation_time: datetime  # When swing was confirmed (pivot + right_bars)
     price: float
     # Equal high/low classification
@@ -198,6 +197,7 @@ def confirm_swings(
                 swing_type=SwingType.HIGH,
                 pivot_index=cand.pivot_index,
                 pivot_time=cand.pivot_time,
+                confirmation_index=confirmation_idx,
                 confirmation_time=times[confirmation_idx],
                 price=cand.price,
                 equal_policy=cand.equal_policy,
@@ -231,6 +231,7 @@ def confirm_swings(
                 swing_type=SwingType.LOW,
                 pivot_index=cand.pivot_index,
                 pivot_time=cand.pivot_time,
+                confirmation_index=confirmation_idx,
                 confirmation_time=times[confirmation_idx],
                 price=cand.price,
                 equal_policy=cand.equal_policy,

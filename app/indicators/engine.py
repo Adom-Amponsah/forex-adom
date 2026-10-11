@@ -143,8 +143,6 @@ def compute_indicators_for_candles(
     Returns dict with arrays aligned to candle indices.
     """
     closes = np.array([c.close for c in candles])
-    highs = np.array([c.high for c in candles])
-    lows = np.array([c.low for c in candles])
     
     result = {}
     
@@ -183,25 +181,55 @@ def get_indicator_state(
     return state
 
 
-def ema_relationships(price: float, ema_values: dict[int, float]) -> dict[str, str]:
-    """Determine price vs EMA relationships."""
+def ema_relationships(price: float, ema_values: dict[str, float]) -> dict[str, str]:
+    """
+    Determine price vs EMA relationships.
+
+    Keys in `ema_values` look like ``"ema_20"``; output keys look like
+    ``"price_vs_ema20"``.
+    """
     rel = {}
-    for period, ema in ema_values.items():
+    for key, ema in ema_values.items():
+        period = key.replace("ema_", "")
+        name = f"price_vs_ema{period}"
         if ema is None:
-            rel[f"price_vs_ema{period}"] = "unknown"
+            rel[name] = "unknown"
         elif price > ema:
-            rel[f"price_vs_ema{period}"] = "above"
+            rel[name] = "above"
         elif price < ema:
-            rel[f"price_vs_ema{period}"] = "below"
+            rel[name] = "below"
         else:
-            rel[f"price_vs_ema{period}"] = "equal"
+            rel[name] = "equal"
     return rel
 
 
-def ema_directions(ema_values: dict[int, float], lookback: int = 3) -> dict[str, str]:
+def ema_directions(
+    indicators: dict[str, np.ndarray],
+    idx: int,
+    periods: list[int],
+    lookback: int = 3,
+) -> dict[str, str]:
     """
-    Determine EMA direction (up/down/flat) based on recent slope.
-    Note: This requires historical EMA values, not just current.
-    For now, returns 'unknown' - direction should be computed from EMA series.
+    Determine EMA slope direction (up/down/flat) over `lookback` bars.
+
+    Reads the EMA series from the `indicators` dict so it reflects the state at
+    `idx` rather than assuming a value exists.
     """
-    return {f"ema{period}": "unknown" for period in ema_values}
+    out = {}
+    for period in periods:
+        key = f"ema_{period}"
+        name = f"ema{period}"
+        arr = indicators.get(key)
+        if arr is None or idx - lookback < 0 or idx >= len(arr):
+            out[name] = "unknown"
+            continue
+        now, past = arr[idx], arr[idx - lookback]
+        if np.isnan(now) or np.isnan(past):
+            out[name] = "unknown"
+        elif now > past:
+            out[name] = "up"
+        elif now < past:
+            out[name] = "down"
+        else:
+            out[name] = "flat"
+    return out
