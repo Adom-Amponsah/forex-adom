@@ -31,6 +31,10 @@ class ValidationResult(BaseModel):
     warnings: list[ValidationIssue] = []
 
 
+def _opposite(direction: str) -> str:
+    return "bullish" if direction == "bearish" else "bearish"
+
+
 def _known_levels(state: MarketState) -> list[float]:
     levels: list[float] = []
     for level in (state.previous_day, state.previous_week):
@@ -114,10 +118,21 @@ def validate_analysis(analysis: AIAnalysis, state: MarketState) -> ValidationRes
         check_refs(kl.references, f"key_levels[{kl.price}]")
 
     # scenarios
+    BULLISH_TRIGGERS = {"closes_above", "price_above"}
+    BEARISH_TRIGGERS = {"closes_below", "price_below"}
+
     for sc in analysis.scenarios:
         check_refs(sc.references, f"scenario '{sc.name}'")
         if sc.target is not None:
             check_level(sc.target, f"scenario '{sc.name}' target")
+
+        if sc.direction == "bullish":
+            want_cond, want_inv = BULLISH_TRIGGERS, BEARISH_TRIGGERS
+        elif sc.direction == "bearish":
+            want_cond, want_inv = BEARISH_TRIGGERS, BULLISH_TRIGGERS
+        else:
+            want_cond = want_inv = None
+
         for cond in list(sc.conditions) + list(sc.invalidation):
             if cond.reference_id and cond.reference_id not in valid_ids:
                 errors.append(ValidationIssue(
@@ -131,6 +146,22 @@ def validate_analysis(analysis: AIAnalysis, state: MarketState) -> ValidationRes
                         message=f"scenario '{sc.name}' condition '{cond.type}' has no price"))
                 else:
                     check_level(cond.price, f"scenario '{sc.name}' condition")
+
+        # Semantic consistency: the triggers must agree with the direction.
+        if want_cond is not None:
+            for cond in sc.conditions:
+                if cond.type in (BULLISH_TRIGGERS | BEARISH_TRIGGERS) and cond.type not in want_cond:
+                    errors.append(ValidationIssue(
+                        severity="error", code="inconsistent_condition",
+                        message=f"scenario '{sc.name}' is {sc.direction} but its trigger "
+                                f"'{cond.type}' is a {_opposite(sc.direction)} trigger"))
+            for cond in sc.invalidation:
+                if cond.type in (BULLISH_TRIGGERS | BEARISH_TRIGGERS) and cond.type not in want_inv:
+                    errors.append(ValidationIssue(
+                        severity="error", code="inconsistent_invalidation",
+                        message=f"scenario '{sc.name}' is {sc.direction} but its invalidation "
+                                f"'{cond.type}' is a {sc.direction} trigger (it would fire "
+                                f"immediately)"))
 
     if not analysis.scenarios:
         warnings.append(ValidationIssue(

@@ -118,6 +118,30 @@ def test_unsupported_level_fails():
     assert any(e.code == "unsupported_level" for e in result.errors)
 
 
+def test_inconsistent_invalidation_fails():
+    """A bullish scenario whose invalidation is also bullish would fire at once."""
+    state = _state()
+    bad = _grounded_analysis(state)
+    price = bad["scenarios"][0]["conditions"][0]["price"]
+    bad["scenarios"][0]["invalidation"] = [
+        {"type": "closes_above", "price": price, "description": "wrong side"}
+    ]
+    result = validate_analysis(AIAnalysis.model_validate(bad), state)
+    assert any(e.code == "inconsistent_invalidation" for e in result.errors)
+
+
+def test_inconsistent_condition_fails():
+    """A bullish scenario triggered by a bearish condition is self-contradictory."""
+    state = _state()
+    bad = _grounded_analysis(state)
+    price = bad["scenarios"][0]["conditions"][0]["price"]
+    bad["scenarios"][0]["conditions"] = [
+        {"type": "closes_below", "price": price, "description": "wrong side"}
+    ]
+    result = validate_analysis(AIAnalysis.model_validate(bad), state)
+    assert any(e.code == "inconsistent_condition" for e in result.errors)
+
+
 def test_retry_with_feedback_recovers(tmp_path):
     state = _state()
     bad = _grounded_analysis(state)
