@@ -5,6 +5,14 @@ import click
 from pathlib import Path
 from datetime import datetime
 import json
+
+# Load a local .env (git-ignored) if present, so secrets never need committing.
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:  # python-dotenv is a transitive dep of pydantic-settings
+    pass
+
 from app.data.models import Timeframe
 from app.data.provider import get_provider, DataProvider
 from app.replay.engine import run_replay, run_single_analysis
