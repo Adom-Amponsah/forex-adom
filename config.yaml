@@ -60,6 +60,13 @@ round_numbers:
   # Number of levels above/below current price to include
   levels_around_price: 5
 
+# Pattern geometry
+patterns:
+  equal_tolerance_atr: 0.5   # max difference between "equal" pivots (ATR multiple)
+  min_depth_atr: 1.0         # minimum pattern depth/height (ATR multiple)
+  flat_slope_atr: 0.05       # slope below this counts as a flat trendline
+  max_swings: 8              # recent swings per side for trendline fitting
+
 # Sessions (timezone-aware)
 sessions:
   timezone: "UTC"

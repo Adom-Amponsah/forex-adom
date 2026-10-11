@@ -66,6 +66,17 @@ class RoundNumberConfig(BaseModel):
     levels_around_price: int = 5
 
 
+class PatternsConfig(BaseModel):
+    # Max difference between "equal" pivots, as an ATR multiple
+    equal_tolerance_atr: float = 0.5
+    # Minimum pattern depth/height, as an ATR multiple
+    min_depth_atr: float = 1.0
+    # Slope magnitude (price per bar) below which a trendline counts as flat
+    flat_slope_atr: float = 0.05
+    # How many recent swings per side to fit trendlines through
+    max_swings: int = 8
+
+
 class SessionDefinition(BaseModel):
     start: str
     end: str
@@ -131,6 +142,7 @@ class Config(BaseModel):
     breakout: BreakoutConfig = Field(default_factory=BreakoutConfig)
     zones: ZoneConfig = Field(default_factory=ZoneConfig)
     round_numbers: RoundNumberConfig = Field(default_factory=RoundNumberConfig)
+    patterns: PatternsConfig = Field(default_factory=PatternsConfig)
     sessions: SessionsConfig = Field(default_factory=SessionsConfig)
     csv_import: CSVImportConfig = Field(default_factory=CSVImportConfig)
     oanda: OandaConfig = Field(default_factory=OandaConfig)

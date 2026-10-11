@@ -12,6 +12,7 @@ from app.indicators.fibonacci import FibonacciRetracement
 from app.indicators.levels import PreviousLevel, RoundNumberLevels
 from app.indicators.sessions import SessionState
 from app.patterns.candle_features import CandleFeatures
+from app.patterns.models import PatternFeature
 from app.config.settings import config
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -30,6 +31,7 @@ class TimeframeState(BaseModel):
     candles: list[Candle] = []  # Recent candles for LLM context
     features: list[CandleFeatures] = []
     events: list[StructuralEvent] = []
+    pattern_features: list[PatternFeature] = []
 
 
 class MarketState(BaseModel):
@@ -131,6 +133,7 @@ class MarketStateBuilder:
 
         timeframe_states: dict[str, TimeframeState] = {}
         all_events: list[StructuralEvent] = []
+        all_patterns: list[PatternFeature] = []
         event_counter = 0
 
         for tf in ordered_tfs:
@@ -217,6 +220,17 @@ class MarketStateBuilder:
             from app.patterns.candle_features import detect_features_for_series
             features = detect_features_for_series(tf_candles)
 
+            from app.patterns.geometry import detect_patterns
+            patterns = detect_patterns(
+                labeled_swings=labeled_swings,
+                candles=tf_candles,
+                atr=indicator_state.get("atr"),
+                timeframe=tf,
+                symbol=symbol,
+            )
+            if patterns:
+                all_patterns.extend(patterns)
+
             recent_count = self.config.replay.recent_candles_per_timeframe
             recent_candles = tf_candles[-recent_count:] if len(tf_candles) > recent_count else tf_candles
 
@@ -235,6 +249,7 @@ class MarketStateBuilder:
                 candles=recent_candles,
                 features=features,
                 events=structure.all_events,
+                pattern_features=patterns,
             )
 
         return MarketState(
@@ -253,6 +268,7 @@ class MarketStateBuilder:
             previous_week=previous_week,
             round_numbers=round_nums,
             timeframes=timeframe_states,
+            pattern_features=all_patterns,
             structural_events=all_events,
             data_quality=data_quality,
         )
