@@ -54,11 +54,17 @@ class Confirmation(BaseModel):
 class Alignment(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    htf_bias: str
+    context_bias: str  # aggregate of all context timeframes
     structure_bias: str
     decision_bias: str
-    aligned: bool
+    per_timeframe: dict[str, str] = Field(default_factory=dict)
+
+    # strength: "strong" (unanimous) | "partial" (majority) | "conflicted" | "none"
+    quality: str = "none"
+    aligned: bool = False
     direction: Optional[str] = None
+    agreement_count: int = 0
+    directional_count: int = 0
     confirmations: list[Confirmation] = []
     conflicts: list[str] = []
 

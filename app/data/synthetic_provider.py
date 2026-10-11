@@ -19,7 +19,14 @@ from app.data.models import (
 )
 from app.data.provider import LoadedSeries
 
-_GROUP_SIZE = {Timeframe.H1: 1, Timeframe.H4: 4, Timeframe.D1: 24}
+# H1 bars per aggregated bar (approx: 24h/day, 5 trading days/week)
+_GROUP_SIZE = {
+    Timeframe.H1: 1,
+    Timeframe.H4: 4,
+    Timeframe.D1: 24,
+    Timeframe.W1: 120,
+    Timeframe.MN1: 504,
+}
 
 
 class SyntheticDataProvider:

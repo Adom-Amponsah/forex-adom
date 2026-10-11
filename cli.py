@@ -42,12 +42,13 @@ def build_provider(
 
 def timeframes_for_style(style: str, decision_tf: str):
     if style == "swing":
-        timeframes = [Timeframe.D1, Timeframe.H4, Timeframe.H1]
-        context_tfs = [Timeframe.D1]
+        # Top-down stack: monthly/weekly/daily context, 4H structure, 1H decision
+        timeframes = [Timeframe.MN1, Timeframe.W1, Timeframe.D1, Timeframe.H4, Timeframe.H1]
+        context_tfs = [Timeframe.MN1, Timeframe.W1, Timeframe.D1]
         structure_tfs = [Timeframe.H4]
     else:
-        timeframes = [Timeframe.H4, Timeframe.H1, Timeframe.M15, Timeframe.M5]
-        context_tfs = [Timeframe.H4]
+        timeframes = [Timeframe.D1, Timeframe.H4, Timeframe.H1, Timeframe.M15, Timeframe.M5]
+        context_tfs = [Timeframe.D1, Timeframe.H4]
         structure_tfs = [Timeframe.H1]
     return timeframes, context_tfs, structure_tfs, Timeframe(decision_tf)
 

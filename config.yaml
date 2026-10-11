@@ -12,8 +12,9 @@ style: "swing"
 data_provider: "csv"
 
 # Timeframe hierarchy - explicit configuration
+# Context is ordered largest -> smallest; the more that agree, the stronger the read.
 timeframes:
-  context: ["D1"]
+  context: ["MN1", "W1", "D1"]
   structure: ["H4"]
   decision: "H1"
   confirmation: []
@@ -141,6 +142,7 @@ llm:
   max_zones_per_tf: 8
   max_patterns_per_tf: 6
   max_candles_per_tf: 24
+  max_swings_per_tf: 8
   max_global_events: 8
 
 # Symbol metadata (will be overridden by CSV data if available)

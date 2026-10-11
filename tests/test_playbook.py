@@ -7,11 +7,11 @@ from app.patterns.models import PatternType, PatternClass, pattern_class_of
 
 
 def _state() -> MarketState:
-    provider = SyntheticDataProvider(seed=7, h1_bars=1500)
-    tfs = [Timeframe.D1, Timeframe.H4, Timeframe.H1]
+    provider = SyntheticDataProvider(seed=7, h1_bars=4000)
+    tfs = [Timeframe.MN1, Timeframe.W1, Timeframe.D1, Timeframe.H4, Timeframe.H1]
     dc = provider.load("EURUSD", tfs)[Timeframe.H1].candles[-1].time_close
     text = run_single_analysis(provider, "EURUSD", dc, tfs, Timeframe.H1,
-                               [Timeframe.D1], [Timeframe.H4])
+                               [Timeframe.MN1, Timeframe.W1, Timeframe.D1], [Timeframe.H4])
     return MarketState.model_validate_json(text)
 
 
@@ -31,7 +31,9 @@ def test_playbook_present_with_roles_and_steps():
     roles = {b.role for b in pb.higher_timeframes}
     assert {"context", "structure", "decision"} <= roles
     # ordered largest timeframe first
-    assert pb.higher_timeframes[0].timeframe == "D1"
+    assert pb.higher_timeframes[0].timeframe == "MN1"
+    # the full top-down stack is present
+    assert {"MN1", "W1", "D1", "H4", "H1"} <= set(pb.alignment.per_timeframe)
 
 
 def test_confluence_is_structural_not_round_numbers():
@@ -57,10 +59,16 @@ def test_playbook_is_deterministic():
     assert a == b
 
 
-def test_alignment_reports_direction_only_when_aligned():
+def test_alignment_quality_and_direction():
     pb = _state().playbook
-    if pb.alignment.aligned:
-        assert pb.alignment.direction in ("bullish", "bearish")
-        assert any(c.type == "structure_alignment" for c in pb.alignment.confirmations)
+    al = pb.alignment
+    assert al.quality in ("strong", "partial", "conflicted", "none")
+    if al.quality == "strong":
+        assert al.aligned and al.direction in ("bullish", "bearish")
+        assert al.agreement_count == al.directional_count
+        assert any(c.type == "structure_alignment" for c in al.confirmations)
+    elif al.quality == "partial":
+        assert not al.aligned and al.direction in ("bullish", "bearish")
+        assert al.agreement_count > al.directional_count / 2
     else:
-        assert pb.alignment.direction is None
+        assert al.direction is None

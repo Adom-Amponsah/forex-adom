@@ -148,34 +148,47 @@ def classify_swings(swings: list[Swing]) -> list[LabeledSwing]:
 def determine_structure_direction(labeled_swings: list[LabeledSwing]) -> StructureDirection:
     """
     Determine overall structure direction from labeled swings.
-    
-    Bullish: requires HH + HL sequence
-    Bearish: requires LH + LL sequence
-    Range: neither clearly bullish nor bearish
+
+    Rather than demanding the *absence* of any counter-label (which almost never
+    holds and leaves everything "mixed"), we score recent swings: HH/HL add,
+    LH/LL subtract. A clear net score is a trend; a tie is range/mixed.
     """
     if len(labeled_swings) < 2:
         return StructureDirection.UNKNOWN
-    
-    # Get recent labels (last 4 swings of each type)
-    high_labels = [ls.label for ls in labeled_swings if ls.swing.swing_type == SwingType.HIGH]
-    low_labels = [ls.label for ls in labeled_swings if ls.swing.swing_type == SwingType.LOW]
-    
-    # Check for bullish: need at least one HH and one HL in recent structure
-    has_hh = StructureLabel.HH in high_labels[-3:]
-    has_hl = StructureLabel.HL in low_labels[-3:]
-    
-    # Check for bearish: need at least one LH and one LL
-    has_lh = StructureLabel.LH in high_labels[-3:]
-    has_ll = StructureLabel.LL in low_labels[-3:]
-    
-    if has_hh and has_hl and not (has_lh or has_ll):
+
+    highs = [ls for ls in labeled_swings if ls.swing.swing_type == SwingType.HIGH]
+    lows = [ls for ls in labeled_swings if ls.swing.swing_type == SwingType.LOW]
+
+    score = 0
+    for ls in highs[-3:]:
+        if ls.label == StructureLabel.HH:
+            score += 1
+        elif ls.label == StructureLabel.LH:
+            score -= 1
+    for ls in lows[-3:]:
+        if ls.label == StructureLabel.HL:
+            score += 1
+        elif ls.label == StructureLabel.LL:
+            score -= 1
+
+    if score >= 2:
         return StructureDirection.BULLISH
-    elif has_lh and has_ll and not (has_hh or has_hl):
+    if score <= -2:
         return StructureDirection.BEARISH
-    elif (has_hh or has_hl) and (has_lh or has_ll):
-        return StructureDirection.MIXED
-    else:
-        return StructureDirection.RANGE
+
+    # Tie-breaker: compare the two most recent swings of each type.
+    if len(highs) >= 2 and len(lows) >= 2:
+        h_dir = 1 if highs[-1].swing.price > highs[-2].swing.price else -1
+        l_dir = 1 if lows[-1].swing.price > lows[-2].swing.price else -1
+        pair = h_dir + l_dir
+        if pair == 2:
+            return StructureDirection.BULLISH
+        if pair == -2:
+            return StructureDirection.BEARISH
+        if pair == 0:
+            return StructureDirection.RANGE
+
+    return StructureDirection.MIXED
 
 
 def identify_protected_levels(

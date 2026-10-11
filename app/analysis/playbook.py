@@ -102,36 +102,61 @@ def _confluence(state: MarketState, tolerance: float) -> list[ConfluenceLevel]:
     return out
 
 
+def _aggregate(biases: list[TimeframeBias]) -> str:
+    dirs = [b.direction for b in biases if b.direction != "neutral"]
+    if not dirs:
+        return "neutral"
+    if len(set(dirs)) == 1:
+        return dirs[0]
+    return "mixed"
+
+
 def _alignment(biases: list[TimeframeBias], state: MarketState) -> Alignment:
-    by_role = {b.role: b for b in biases}
-    htf = by_role.get("context") or (biases[0] if biases else None)
-    struct = by_role.get("structure")
-    dec = by_role.get("decision")
+    from collections import Counter
 
-    htf_bias = htf.direction if htf else "neutral"
-    struct_bias = struct.direction if struct else "neutral"
-    dec_bias = dec.direction if dec else "neutral"
+    context_biases = [b for b in biases if b.role == "context"]
+    structure_biases = [b for b in biases if b.role == "structure"]
+    decision_biases = [b for b in biases if b.role == "decision"]
 
-    known = [b for b in (htf_bias, struct_bias, dec_bias) if b != "neutral"]
-    aligned = len(known) >= 2 and len(set(known)) == 1
-    direction = known[0] if aligned else None
+    context_bias = _aggregate(context_biases)
+    structure_bias = _aggregate(structure_biases)
+    decision_bias = _aggregate(decision_biases)
+    per_tf = {b.timeframe: b.direction for b in biases}
+
+    non_neutral = [b for b in biases if b.direction != "neutral"]
+    counts = Counter(b.direction for b in non_neutral)
+    directional_count = len(non_neutral)
+    dominant = counts.most_common(1)[0][0] if counts else None
+    agreement_count = counts.get(dominant, 0) if dominant else 0
+
+    # Graded confirmation: unanimous is strong, a majority is partial.
+    if directional_count == 0:
+        quality, aligned, direction = "none", False, None
+    elif agreement_count == directional_count:
+        quality, aligned, direction = "strong", True, dominant
+    elif agreement_count > directional_count / 2:
+        quality, aligned, direction = "partial", False, dominant
+    else:
+        quality, aligned, direction = "conflicted", False, None
 
     confirmations: list[Confirmation] = []
     conflicts: list[str] = []
 
-    if aligned:
+    if direction:
+        agreeing = [b.timeframe for b in biases if b.direction == direction]
         confirmations.append(Confirmation(
-            type="structure_alignment",
+            type="structure_alignment" if quality == "strong" else "partial_alignment",
             direction=direction,
-            timeframes=[b.timeframe for b in biases if b.direction == direction],
-            description=f"{direction} structure agrees across "
-                        f"{', '.join(b.timeframe for b in biases if b.direction == direction)}",
-            evidence_ids=[],
+            timeframes=agreeing,
+            description=(
+                f"{direction} structure agrees across {', '.join(agreeing)}"
+                if quality == "strong" else
+                f"{direction} on {', '.join(agreeing)} but not all timeframes agree"
+            ),
         ))
-
-    for b in biases:
-        if b.direction != "neutral" and direction and b.direction != direction:
-            conflicts.append(f"{b.timeframe} is {b.direction} against {direction}")
+        for b in biases:
+            if b.direction not in ("neutral", direction):
+                conflicts.append(f"{b.timeframe} is {b.direction} against {direction}")
 
     # Pattern confirmation: a confirmed pattern in the aligned direction.
     if direction:
@@ -164,8 +189,10 @@ def _alignment(biases: list[TimeframeBias], state: MarketState) -> Alignment:
                 break
 
     return Alignment(
-        htf_bias=htf_bias, structure_bias=struct_bias, decision_bias=dec_bias,
-        aligned=aligned, direction=direction,
+        context_bias=context_bias, structure_bias=structure_bias, decision_bias=decision_bias,
+        per_timeframe=per_tf,
+        quality=quality, aligned=aligned, direction=direction,
+        agreement_count=agreement_count, directional_count=directional_count,
         confirmations=confirmations, conflicts=conflicts,
     )
 
@@ -257,10 +284,20 @@ def _steps(state, biases, confluence, alignment, continuation, reversal) -> list
             f"Confluence S/R: {len(confluence)} multi-timeframe level(s); "
             f"strongest {top.price} on {'/'.join(top.timeframes)}"
         )
-    if alignment.aligned:
-        steps.append(f"Alignment: {alignment.direction} confirmed across timeframes")
+    steps.append(
+        f"Agreement: {alignment.agreement_count}/{alignment.directional_count} directional "
+        f"timeframes agree ({alignment.quality}); context={alignment.context_bias}, "
+        f"structure={alignment.structure_bias}, decision={alignment.decision_bias}"
+    )
+    if alignment.direction:
+        agreeing = [tf for tf, d in alignment.per_timeframe.items() if d == alignment.direction]
+        steps.append(
+            f"Bias: {alignment.direction.upper()} ({alignment.quality}) on {', '.join(agreeing)}"
+        )
     else:
-        steps.append("Alignment: timeframes do not agree (no confirmed bias)")
+        steps.append("Bias: none (timeframes do not agree)")
+    if alignment.conflicts:
+        steps.append(f"Conflicts: {'; '.join(alignment.conflicts)}")
     steps.append(f"Confirmations: {len(alignment.confirmations)}")
     steps.append(
         f"Continuation setups: {len(continuation)} "

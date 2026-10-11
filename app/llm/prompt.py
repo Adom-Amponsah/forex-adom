@@ -16,19 +16,31 @@ from app.market_state.builder import MarketState
 SYSTEM_PROMPT = """You are a forex market analyst. You interpret a machine-generated \
 market state; you do NOT invent data.
 
+THE AUTHORITATIVE FACTS (trust these):
+  - `recent_swings` per timeframe: the actual pivots with HH/HL/LH/LL labels
+  - `zones` / key levels (price + id), `patterns` geometry with status
+  - indicators, recent candles, previous day/week levels, round numbers
+  - structural events (a close beyond a level)
+
+MACHINE HINTS (NOT authoritative - this is a computer's opinion):
+  - `heuristic_read` contains computed directions, an alignment verdict, and
+    continuation/reversal splits. Treat it as one analyst's guess. You MUST
+    verify it against the raw `recent_swings` and key levels, and OVERRIDE it
+    whenever the raw structure disagrees. If you disagree, say so in `unclear`.
+
 Rules:
 1. Use ONLY the facts and evidence IDs provided. Never invent prices, levels,
    events, indicators, or IDs.
-2. Read the PLAYBOOK first - it is the chart read top-down the way a trader
-   reads it: higher-timeframe context, key S/R, cross-timeframe alignment and
-   confirmations, then continuation vs reversal setups. Follow that order.
-3. Every claim in `timeframe_read`, `key_levels`, `scenarios`, and `patterns`
+2. YOU decide the bias, the phase, which timeframes matter, whether they align,
+   and which setups are continuation vs reversal. The heuristic_read does not
+   decide for you - it is a starting point you may reject.
+3. Read top-down: higher timeframes set context, lower timeframes refine timing.
+   Ground every claim in the specific swings/levels you are reading.
+4. Every claim in `timeframe_read`, `key_levels`, `scenarios`, and `patterns`
    must cite at least one `references` ID that exists in the provided evidence.
-4. Read top-down: higher timeframes set context, lower timeframes refine timing.
 5. Scenarios must be conditional and machine-checkable: express triggers as typed
    conditions (e.g. {"type":"closes_above","price":1.1234}) - never as vague prose.
-6. Distinguish facts (given) from interpretation (yours). If the state is
-   ambiguous, say so in `unclear` rather than guessing.
+6. If the state is ambiguous, say so in `unclear` rather than guessing.
 7. Output ONLY a single JSON object matching the schema. No markdown, no prose
    outside the JSON.
 """
@@ -103,7 +115,9 @@ def build_facts(state: MarketState) -> dict:
 
     if state.playbook is not None:
         pb = state.playbook
-        facts["playbook"] = {
+        facts["heuristic_read"] = {
+            "note": ("machine-computed hints - NOT authoritative. Verify against "
+                     "recent_swings and key levels; override when they disagree."),
             "steps": pb.steps,
             "higher_timeframes": [b.model_dump(mode="json") for b in pb.higher_timeframes],
             "confluence_levels": [c.model_dump(mode="json") for c in pb.confluence_levels],
@@ -124,6 +138,17 @@ def build_facts(state: MarketState) -> dict:
                 "protected_high": _swing(ext.protected_high),
                 "protected_low": _swing(ext.protected_low),
             }
+            # The raw pivot sequence - this is the fact the model reads the trend from.
+            tf_facts["recent_swings"] = [
+                {
+                    "id": ls.swing.id,
+                    "type": ls.swing.swing_type.value,
+                    "label": ls.label.value,
+                    "price": ls.swing.price,
+                    "time": ls.swing.pivot_time.isoformat(),
+                }
+                for ls in tf.structure.internal.swings[-cfg.max_swings_per_tf:]
+            ]
 
         zones = _curate_zones(tf.zones, state.price, cfg.max_zones_per_tf)
         tf_facts["zones"] = [

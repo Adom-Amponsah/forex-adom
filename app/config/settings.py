@@ -138,6 +138,7 @@ class LlmConfig(BaseModel):
     max_zones_per_tf: int = 8
     max_patterns_per_tf: int = 6
     max_candles_per_tf: int = 24
+    max_swings_per_tf: int = 8
     max_global_events: int = 8
 
 
