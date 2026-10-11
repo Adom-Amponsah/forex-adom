@@ -216,7 +216,7 @@ def build_facts(state: MarketState) -> dict:
     return facts
 
 
-def build_user_prompt(state: MarketState) -> str:
+def build_user_prompt(state: MarketState, prior: dict | None = None) -> str:
     facts = build_facts(state)
 
     ids: set = set()
@@ -243,7 +243,16 @@ def build_user_prompt(state: MarketState) -> str:
         "unclear": ["string"],
     }
 
-    return (
+    parts = []
+    if prior is not None:
+        parts.append(
+            "PRIOR READ (your own previous analysis - maintain continuity):\n"
+            f"{json.dumps(prior, indent=2)}\n\n"
+            "Continue the flow: state which prior scenarios are still valid, which "
+            "have been invalidated or played out, and what (if anything) is new.\n"
+        )
+
+    parts.append(
         "MARKET STATE FACTS (authoritative, do not contradict):\n"
         f"{json.dumps(facts, indent=2)}\n\n"
         "VALID EVIDENCE IDS (cite only these):\n"
@@ -251,3 +260,4 @@ def build_user_prompt(state: MarketState) -> str:
         "Respond with a single JSON object in exactly this shape:\n"
         f"{json.dumps(schema_hint, indent=2)}"
     )
+    return "\n".join(parts)

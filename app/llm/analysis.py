@@ -69,8 +69,13 @@ def interpret_market_state(
     client: LLMClient,
     max_retries: Optional[int] = None,
     reject_dir: Optional[str] = None,
+    prior: Optional[dict] = None,
 ) -> InterpretationResult:
-    """Interpret a market state, retrying with validation feedback."""
+    """Interpret a market state, retrying with validation feedback.
+
+    `prior` optionally carries the previous read forward so the model can
+    maintain continuity across a walk-forward run.
+    """
     from app.config.settings import config
 
     if max_retries is None:
@@ -78,7 +83,7 @@ def interpret_market_state(
     if reject_dir is None:
         reject_dir = config.llm.reject_dir
 
-    base_user = build_user_prompt(state)
+    base_user = build_user_prompt(state, prior=prior)
     user = base_user
 
     last_analysis: Optional[AIAnalysis] = None

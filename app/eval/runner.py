@@ -21,6 +21,36 @@ from app.llm.analysis import interpret_market_state
 from app.eval.outcomes import evaluate_scenario
 
 
+def _build_prior(
+    prev_analysis,
+    prev_as_of,
+    candles,
+    current_as_of,
+) -> dict:
+    """Carry the previous read forward, with its scenarios scored as of now."""
+    upto = [c for c in candles if c.time_close <= current_as_of]
+    price_then = next((c.close for c in candles if c.time_close == prev_as_of), None)
+    price_now = next((c.close for c in candles if c.time_close == current_as_of), None)
+
+    outcomes = [
+        evaluate_scenario(sc, upto, prev_as_of, horizon_bars=len(upto)).model_dump(mode="json")
+        for sc in prev_analysis.scenarios
+    ]
+    bars_since = sum(1 for c in candles if prev_as_of < c.time_close <= current_as_of)
+
+    return {
+        "as_of": prev_as_of.isoformat(),
+        "bias": prev_analysis.bias.value,
+        "market_phase": prev_analysis.market_phase.value,
+        "summary": prev_analysis.summary,
+        "scenarios": [sc.model_dump(mode="json") for sc in prev_analysis.scenarios],
+        "scenario_outcomes_since": outcomes,
+        "price_then": price_then,
+        "price_now": price_now,
+        "bars_since": bars_since,
+    }
+
+
 def run_evaluation(
     provider: DataProvider,
     symbol: str,
@@ -38,8 +68,14 @@ def run_evaluation(
     reject_dir: Optional[str] = None,
     out_path: Optional[str] = None,
     progress: bool = True,
+    chain: bool = False,
 ) -> list[dict]:
-    """Run the LLM over a slice of history and return per-point records."""
+    """Run the LLM over a slice of history and return per-point records.
+
+    With `chain=True`, each analysis is given the previous read (and what price
+    did since), so the model maintains a continuous plan rather than starting
+    cold every time.
+    """
     loaded = provider.load(symbol, timeframes)
     all_candles = {tf: s.candles for tf, s in loaded.items()}
     first = next(iter(loaded.values()))
@@ -50,6 +86,9 @@ def run_evaluation(
 
     indices = list(range(start_idx, min(start_idx + count * step, len(decision_candles)), step))
     records: list[dict] = []
+
+    prior_analysis = None
+    prior_as_of = None
 
     iterator = tqdm(indices, desc="Evaluating", disable=not progress)
     for idx in iterator:
@@ -69,15 +108,20 @@ def run_evaluation(
             data_source=source,
         )
 
+        prior = None
+        if chain and prior_analysis is not None:
+            prior = _build_prior(prior_analysis, prior_as_of, decision_candles, state.as_of)
+
         record: dict = {
             "as_of": state.as_of.isoformat(),
             "price": state.price,
             "n_patterns": len(state.pattern_features),
+            "chained": prior is not None,
         }
 
         try:
             result = interpret_market_state(
-                state, client, max_retries=max_retries, reject_dir=reject_dir
+                state, client, max_retries=max_retries, reject_dir=reject_dir, prior=prior
             )
             record.update({
                 "ok": result.ok,
@@ -94,6 +138,8 @@ def run_evaluation(
                     evaluate_scenario(sc, decision_candles, state.as_of, horizon_bars).model_dump(mode="json")
                     for sc in result.analysis.scenarios
                 ]
+                prior_analysis = result.analysis
+                prior_as_of = state.as_of
         except Exception as e:  # keep the run going
             record.update({"ok": False, "attempts": 0, "error": f"{type(e).__name__}: {e}"})
 

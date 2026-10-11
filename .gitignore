@@ -45,6 +45,7 @@ output/
 rejected_analyses/
 eval.jsonl
 eval*.jsonl
+*.jsonl
 
 # Data files (optional - keep sample data)
 # data/*.csv

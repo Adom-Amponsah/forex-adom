@@ -329,9 +329,11 @@ def interpret(snapshot_file: str, max_retries, reject_dir, output, show_prompt):
 @click.option("--horizon", type=int, default=50, help="Bars to score scenarios over")
 @click.option("--out", type=click.Path(file_okay=True, dir_okay=False), default="eval.jsonl")
 @click.option("--reject-dir", type=click.Path(file_okay=False, dir_okay=True), default=None)
+@click.option("--chain/--no-chain", default=False,
+              help="Carry each read forward into the next analysis (walk-forward)")
 def evaluate(
     symbol, provider_name, data_dir, style, broker_offset, keep_last_row,
-    decision_tf, start_idx, count, step, horizon, out, reject_dir,
+    decision_tf, start_idx, count, step, horizon, out, reject_dir, chain,
 ):
     """Replay history, interpret each point with the LLM, and score the scenarios."""
     timeframes, context_tfs, structure_tfs, decision_tf_enum = timeframes_for_style(style, decision_tf)
@@ -344,13 +346,13 @@ def evaluate(
         provider = build_provider(provider_name, data_dir, broker_offset, not keep_last_row)
         client = get_llm_client()
 
-        click.echo(f"Evaluating {symbol}: {count} points from idx {start_idx} (step {step}, horizon {horizon})")
+        click.echo(f"Evaluating {symbol}: {count} points from idx {start_idx} (step {step}, horizon {horizon}, chain={chain})")
         records = run_evaluation(
             provider=provider, symbol=symbol, client=client,
             timeframes=timeframes, decision_timeframe=decision_tf_enum,
             context_timeframes=context_tfs, structure_timeframes=structure_tfs,
             start_idx=start_idx, count=count, step=step, horizon_bars=horizon,
-            reject_dir=reject_dir, out_path=out,
+            reject_dir=reject_dir, out_path=out, chain=chain,
         )
 
         report = summarize(records)
