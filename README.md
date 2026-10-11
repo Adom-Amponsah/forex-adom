@@ -29,8 +29,13 @@ contains the deterministic core and the data pipeline that feeds it.
 - **Pattern Geometry**: double top/bottom, head & shoulders (+ inverse),
   ascending/descending/symmetrical triangles, rising/falling wedges,
   rectangles, channels - each with a causal forming → confirmed → failed state
+- **Top-down Playbook**: the chart read the way a trader reads it - higher-timeframe
+  context → key S/R → cross-timeframe alignment & confirmations → continuation vs
+  reversal setups (with structural multi-timeframe confluence levels)
 - **LLM Interpretation**: grounded, schema-validated reads of the market state,
   with a retry-with-feedback loop and rejected-attempt storage
+- **Evaluation Harness**: replay history, score each scenario (activation,
+  invalidation, MFE/MAE), and aggregate grounding/activation rates
 - **Historical Replay**: causal replay engine with future-data leak prevention
 
 ## Data Sources

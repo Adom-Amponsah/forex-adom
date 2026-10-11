@@ -19,18 +19,21 @@ market state; you do NOT invent data.
 Rules:
 1. Use ONLY the facts and evidence IDs provided. Never invent prices, levels,
    events, indicators, or IDs.
-2. Every claim in `timeframe_read`, `key_levels`, `scenarios`, and `patterns`
+2. Read the PLAYBOOK first - it is the chart read top-down the way a trader
+   reads it: higher-timeframe context, key S/R, cross-timeframe alignment and
+   confirmations, then continuation vs reversal setups. Follow that order.
+3. Every claim in `timeframe_read`, `key_levels`, `scenarios`, and `patterns`
    must cite at least one `references` ID that exists in the provided evidence.
-3. Read top-down: higher timeframes set context, lower timeframes refine timing.
-4. Scenarios must be conditional and machine-checkable: express triggers as typed
+4. Read top-down: higher timeframes set context, lower timeframes refine timing.
+5. Scenarios must be conditional and machine-checkable: express triggers as typed
    conditions (e.g. {"type":"closes_above","price":1.1234}) - never as vague prose.
-5. Distinguish facts (given) from interpretation (yours). If the state is
+6. Distinguish facts (given) from interpretation (yours). If the state is
    ambiguous, say so in `unclear` rather than guessing.
-6. Output ONLY a single JSON object matching the schema. No markdown, no prose
+7. Output ONLY a single JSON object matching the schema. No markdown, no prose
    outside the JSON.
 """
 
-_ID_KEYS = {"id", "reference_id", "confirmation_candle_id",
+_ID_KEYS = {"id", "reference_id", "confirmation_candle_id", "pattern_id",
             "anchor_low_id", "anchor_high_id"}
 _ID_LIST_KEYS = {"evidence_ids", "references"}
 
@@ -97,6 +100,17 @@ def build_facts(state: MarketState) -> dict:
         "structural_events": [],
         "pattern_features": [],
     }
+
+    if state.playbook is not None:
+        pb = state.playbook
+        facts["playbook"] = {
+            "steps": pb.steps,
+            "higher_timeframes": [b.model_dump(mode="json") for b in pb.higher_timeframes],
+            "confluence_levels": [c.model_dump(mode="json") for c in pb.confluence_levels],
+            "alignment": pb.alignment.model_dump(mode="json"),
+            "continuation_setups": [s.model_dump(mode="json") for s in pb.continuation_setups],
+            "reversal_setups": [s.model_dump(mode="json") for s in pb.reversal_setups],
+        }
 
     for tf_name, tf in state.timeframes.items():
         tf_facts: dict = {"indicators": {"rsi": tf.rsi, "atr": tf.atr, "ema": tf.ema}}

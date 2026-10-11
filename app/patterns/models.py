@@ -8,8 +8,14 @@ IDs) that produced it so the LLM can cite it and the validator can check it.
 from datetime import datetime
 from enum import Enum
 from typing import Optional
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 from app.data.models import Timeframe
+
+
+class PatternClass(str, Enum):
+    CONTINUATION = "continuation"
+    REVERSAL = "reversal"
+    NEUTRAL = "neutral"
 
 
 class PatternType(str, Enum):
@@ -24,6 +30,26 @@ class PatternType(str, Enum):
     FALLING_WEDGE = "falling_wedge"
     RECTANGLE = "rectangle"
     CHANNEL = "channel"
+
+
+# How a trader reads each shape: does it continue the move or reverse it?
+PATTERN_CLASS: dict[PatternType, PatternClass] = {
+    PatternType.DOUBLE_TOP: PatternClass.REVERSAL,
+    PatternType.DOUBLE_BOTTOM: PatternClass.REVERSAL,
+    PatternType.HEAD_SHOULDERS: PatternClass.REVERSAL,
+    PatternType.INVERSE_HEAD_SHOULDERS: PatternClass.REVERSAL,
+    PatternType.RISING_WEDGE: PatternClass.REVERSAL,
+    PatternType.FALLING_WEDGE: PatternClass.REVERSAL,
+    PatternType.ASCENDING_TRIANGLE: PatternClass.CONTINUATION,
+    PatternType.DESCENDING_TRIANGLE: PatternClass.CONTINUATION,
+    PatternType.SYMMETRICAL_TRIANGLE: PatternClass.CONTINUATION,
+    PatternType.RECTANGLE: PatternClass.CONTINUATION,
+    PatternType.CHANNEL: PatternClass.CONTINUATION,
+}
+
+
+def pattern_class_of(pattern_type: PatternType) -> PatternClass:
+    return PATTERN_CLASS.get(pattern_type, PatternClass.NEUTRAL)
 
 
 class PatternStatus(str, Enum):
@@ -96,3 +122,8 @@ class PatternFeature(BaseModel):
     formed_at_index: int = Field(default=0, exclude=True)
 
     notes: str = ""
+
+    @computed_field
+    @property
+    def pattern_class(self) -> str:
+        return pattern_class_of(self.pattern_type).value

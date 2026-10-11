@@ -13,6 +13,7 @@ from app.indicators.levels import PreviousLevel, RoundNumberLevels
 from app.indicators.sessions import SessionState
 from app.patterns.candle_features import CandleFeatures
 from app.patterns.models import PatternFeature
+from app.analysis.models import Playbook
 from app.config.settings import config
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -66,6 +67,9 @@ class MarketState(BaseModel):
 
     # Per-timeframe detail
     timeframes: dict[str, TimeframeState] = {}
+
+    # Top-down playbook (the chart read the way a trader reads it)
+    playbook: Optional["Playbook"] = None
 
     # Pattern features (deterministic geometry)
     pattern_features: list[PatternFeature] = []
@@ -252,7 +256,7 @@ class MarketStateBuilder:
                 pattern_features=patterns,
             )
 
-        return MarketState(
+        state = MarketState(
             schema_version=self.config.engine.schema_version,
             engine_version=self.config.engine.version,
             analysis_engine_version="2.0.0",
@@ -272,6 +276,9 @@ class MarketStateBuilder:
             structural_events=all_events,
             data_quality=data_quality,
         )
+
+        from app.analysis.playbook import build_playbook
+        return state.model_copy(update={"playbook": build_playbook(state)})
 
 
 def serialize_market_state(state: MarketState) -> str:
