@@ -91,11 +91,12 @@ def get_llm_client(
 
     cfg = config.llm
     base = base_url or os.environ.get("LLM_BASE_URL") or cfg.base_url
-    key = api_key or os.environ.get("LLM_API_KEY")
+    key = (api_key or os.environ.get("LLM_API_KEY")
+           or os.environ.get("OPENAI_API_KEY"))
     mdl = model or os.environ.get("LLM_MODEL") or cfg.model
 
     if not key:
-        raise LLMError("LLM_API_KEY is not set")
+        raise LLMError("LLM_API_KEY (or OPENAI_API_KEY) is not set")
     if not mdl:
         raise LLMError("LLM_MODEL is not set")
 

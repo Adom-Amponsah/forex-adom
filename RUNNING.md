@@ -214,8 +214,8 @@ The engine can hand the canonical market state to an LLM and get back a
 level it names must be a real level. Ungrounded output is rejected and retried.
 
 ```powershell
-$env:LLM_API_KEY="sk-..."                 # any OpenAI-compatible endpoint
-$env:LLM_MODEL="gpt-4o-mini"
+$env:LLM_API_KEY="sk-..."                 # or $env:OPENAI_API_KEY
+$env:LLM_MODEL="gpt-4o-mini"              # any model your key can use
 # optional: $env:LLM_BASE_URL="https://api.openai.com/v1"
 
 # 1. produce a market state

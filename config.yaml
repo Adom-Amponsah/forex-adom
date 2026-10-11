@@ -136,6 +136,12 @@ llm:
   timeout: 60.0
   max_retries: 2                          # retries with grounding feedback
   reject_dir: "rejected_analyses"         # where failed attempts are stored
+  # Prompt curation (the raw state is far too large to send verbatim)
+  max_events_per_tf: 5
+  max_zones_per_tf: 8
+  max_patterns_per_tf: 6
+  max_candles_per_tf: 24
+  max_global_events: 8
 
 # Symbol metadata (will be overridden by CSV data if available)
 symbol:

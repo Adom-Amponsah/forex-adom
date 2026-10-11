@@ -14,6 +14,7 @@ from app.market_state.builder import MarketState
 from app.llm.schema import AIAnalysis
 from app.llm.validation import validate_analysis
 from app.llm.analysis import interpret_market_state, extract_json
+from app.llm.evidence import collect_evidence
 from app.llm.prompt import build_user_prompt
 
 
@@ -62,12 +63,22 @@ class FakeClient:
         return self.responses.pop(0)
 
 
-def test_prompt_contains_evidence_ids():
+def test_prompt_evidence_ids_are_real():
+    """Every ID the prompt offers as citable must exist in the market state."""
     state = _state()
     prompt = build_user_prompt(state)
-    zone_id = state.timeframes[state.decision_timeframe].zones[0].id
-    assert zone_id in prompt
     assert "VALID EVIDENCE IDS" in prompt
+
+    marker = "VALID EVIDENCE IDS (cite only these):\n"
+    offered = json.loads(prompt.split(marker, 1)[1].split("\n\nRespond with", 1)[0])["all_ids"]
+    valid = set(collect_evidence(state))
+
+    assert offered, "prompt offered no evidence ids"
+    assert set(offered) <= valid, set(offered) - valid
+
+    # at least one of the state's zones should be citable
+    zone_ids = {z.id for tf in state.timeframes.values() for z in tf.zones}
+    assert zone_ids & set(offered)
 
 
 def test_extract_json_handles_code_fences():

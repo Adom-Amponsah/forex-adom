@@ -133,6 +133,12 @@ class LlmConfig(BaseModel):
     timeout: float = 60.0
     max_retries: int = 2
     reject_dir: str = "rejected_analyses"
+    # Prompt curation limits (the full state is far too large to send verbatim)
+    max_events_per_tf: int = 5
+    max_zones_per_tf: int = 8
+    max_patterns_per_tf: int = 6
+    max_candles_per_tf: int = 24
+    max_global_events: int = 8
 
 
 class SymbolConfig(BaseModel):

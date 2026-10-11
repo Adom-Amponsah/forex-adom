@@ -1,13 +1,17 @@
 """
 Prompt construction for LLM interpretation.
 
-The model is given *facts only* (the canonical market state) plus the exact set
-of evidence IDs it may cite, and is required to answer in the structured schema.
+The model is given *facts only* (a curated view of the canonical market state)
+plus the exact set of evidence IDs it may cite, and is required to answer in
+the structured schema.
+
+The raw state is far too large to send verbatim (hundreds of events/zones), so
+we curate: the levels nearest price, the most recent events, the live patterns,
+and a window of recent candles.
 """
 import json
 
 from app.market_state.builder import MarketState
-from app.llm.evidence import collect_evidence
 
 SYSTEM_PROMPT = """You are a forex market analyst. You interpret a machine-generated \
 market state; you do NOT invent data.
@@ -26,13 +30,59 @@ Rules:
    outside the JSON.
 """
 
+_ID_KEYS = {"id", "reference_id", "confirmation_candle_id",
+            "anchor_low_id", "anchor_high_id"}
+_ID_LIST_KEYS = {"evidence_ids", "references"}
 
-def _prev_level(level) -> dict:
-    return {"high": level.high, "low": level.low}
+
+def _collect_ids(obj, acc: set):
+    """Recursively collect every evidence ID referenced inside the facts."""
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if k in _ID_KEYS and isinstance(v, str) and v:
+                acc.add(v)
+            elif k in _ID_LIST_KEYS and isinstance(v, list):
+                acc.update(x for x in v if isinstance(x, str) and x)
+            else:
+                _collect_ids(v, acc)
+    elif isinstance(obj, list):
+        for x in obj:
+            _collect_ids(x, acc)
+
+
+def _swing(labeled) -> dict | None:
+    if labeled is None:
+        return None
+    return {
+        "id": labeled.swing.id,
+        "label": labeled.label.value,
+        "price": labeled.swing.price,
+        "time": labeled.swing.pivot_time.isoformat(),
+    }
+
+
+def _curate_zones(zones, price, limit):
+    def key(z):
+        live = z.status.value in ("active", "tested")
+        mid = (z.low + z.high) / 2
+        return (0 if live else 1, abs(mid - price))
+    return sorted(zones, key=key)[:limit]
+
+
+def _curate_patterns(patterns, limit):
+    priority = {"forming": 0, "confirmed": 1, "failed": 2}
+
+    def key(p):
+        last_t = p.points[-1].time.timestamp() if p.points else 0.0
+        return (priority.get(p.status.value, 3), -last_t)
+    return sorted(patterns, key=key)[:limit]
 
 
 def build_facts(state: MarketState) -> dict:
-    """A compact, facts-only view of the market state for the model."""
+    """A curated, facts-only view of the market state for the model."""
+    from app.config.settings import config
+    cfg = config.llm
+
     facts: dict = {
         "symbol": state.symbol,
         "style": state.style,
@@ -40,8 +90,8 @@ def build_facts(state: MarketState) -> dict:
         "as_of": state.as_of.isoformat(),
         "price": state.price,
         "session": {"active": state.session.active, "primary": state.session.primary},
-        "previous_day": _prev_level(state.previous_day),
-        "previous_week": _prev_level(state.previous_week),
+        "previous_day": {"high": state.previous_day.high, "low": state.previous_day.low},
+        "previous_week": {"high": state.previous_week.high, "low": state.previous_week.low},
         "round_numbers": state.round_numbers.levels,
         "timeframes": {},
         "structural_events": [],
@@ -61,19 +111,24 @@ def build_facts(state: MarketState) -> dict:
                 "protected_low": _swing(ext.protected_low),
             }
 
+        zones = _curate_zones(tf.zones, state.price, cfg.max_zones_per_tf)
         tf_facts["zones"] = [
             {"id": z.id, "role": z.role.value, "low": z.low, "high": z.high,
              "status": z.status.value, "touch_count": z.touch_count}
-            for z in tf.zones
+            for z in zones
         ]
+        tf_facts["zones_total"] = len(tf.zones)
 
+        events = sorted(tf.events, key=lambda e: e.confirmation_time, reverse=True)
         tf_facts["events"] = [
             {"id": e.id, "type": e.type.value, "time": e.confirmation_time.isoformat(),
              "reference_id": e.reference_id, "reference_price": e.reference_price,
              "break_price": e.break_price}
-            for e in tf.events
+            for e in events[:cfg.max_events_per_tf]
         ]
+        tf_facts["events_total"] = len(tf.events)
 
+        patterns = _curate_patterns(tf.pattern_features, cfg.max_patterns_per_tf)
         tf_facts["patterns"] = [
             {"id": p.id, "type": p.pattern_type.value, "status": p.status.value,
              "direction": p.direction.value, "neckline": p.neckline,
@@ -81,8 +136,9 @@ def build_facts(state: MarketState) -> dict:
              "invalidation_price": p.invalidation_price,
              "measured_move_target": p.measured_move_target,
              "evidence_ids": p.evidence_ids}
-            for p in tf.pattern_features
+            for p in patterns
         ]
+        tf_facts["patterns_total"] = len(tf.pattern_features)
 
         if tf.fib:
             tf_facts["fib"] = {
@@ -95,44 +151,38 @@ def build_facts(state: MarketState) -> dict:
         tf_facts["recent_candles"] = [
             {"time": c.time_close.isoformat(), "o": c.open, "h": c.high,
              "l": c.low, "c": c.close, "id": c.id}
-            for c in tf.candles
+            for c in tf.candles[-cfg.max_candles_per_tf:]
         ]
 
         facts["timeframes"][tf_name] = tf_facts
 
+    globals_sorted = sorted(state.structural_events,
+                            key=lambda e: e.confirmation_time, reverse=True)
     facts["structural_events"] = [
         {"id": e.id, "type": e.type.value, "timeframe": e.timeframe.value,
          "time": e.confirmation_time.isoformat(), "reference_id": e.reference_id,
          "reference_price": e.reference_price, "break_price": e.break_price}
-        for e in state.structural_events
+        for e in globals_sorted[:cfg.max_global_events]
     ]
+    facts["structural_events_total"] = len(state.structural_events)
+
+    patterns_sorted = _curate_patterns(state.pattern_features, cfg.max_patterns_per_tf)
     facts["pattern_features"] = [
         {"id": p.id, "timeframe": p.timeframe.value, "type": p.pattern_type.value,
          "status": p.status.value, "direction": p.direction.value}
-        for p in state.pattern_features
+        for p in patterns_sorted
     ]
+    facts["pattern_features_total"] = len(state.pattern_features)
 
     return facts
 
 
-def _swing(labeled) -> dict | None:
-    if labeled is None:
-        return None
-    return {
-        "id": labeled.swing.id,
-        "label": labeled.label.value,
-        "price": labeled.swing.price,
-        "time": labeled.swing.pivot_time.isoformat(),
-    }
-
-
 def build_user_prompt(state: MarketState) -> str:
     facts = build_facts(state)
-    evidence = collect_evidence(state)
 
-    by_kind: dict[str, list[str]] = {}
-    for eid, kind in sorted(evidence.items()):
-        by_kind.setdefault(kind, []).append(eid)
+    ids: set = set()
+    _collect_ids(facts, ids)
+    evidence = {"all_ids": sorted(ids)}
 
     schema_hint = {
         "bias": "bullish|bearish|neutral|mixed|conditional",
@@ -158,7 +208,7 @@ def build_user_prompt(state: MarketState) -> str:
         "MARKET STATE FACTS (authoritative, do not contradict):\n"
         f"{json.dumps(facts, indent=2)}\n\n"
         "VALID EVIDENCE IDS (cite only these):\n"
-        f"{json.dumps(by_kind, indent=2)}\n\n"
+        f"{json.dumps(evidence, indent=2)}\n\n"
         "Respond with a single JSON object in exactly this shape:\n"
         f"{json.dumps(schema_hint, indent=2)}"
     )
