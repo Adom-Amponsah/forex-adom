@@ -314,5 +314,53 @@ def interpret(snapshot_file: str, max_retries, reject_dir, output, show_prompt):
         raise click.Abort()
 
 
+@cli.command()
+@click.argument("symbol", type=str)
+@click.option("--provider", "provider_name", type=click.Choice(PROVIDER_CHOICES), default="csv")
+@click.option("--data-dir", type=click.Path(exists=True, file_okay=False, dir_okay=True), default="./data")
+@click.option("--style", type=click.Choice(["swing", "intraday"]), default="swing")
+@click.option("--broker-offset", type=float, default=2.0)
+@click.option("--keep-last-row/--drop-last-row", default=False)
+@click.option("--decision-tf", type=click.Choice([tf.value for tf in Timeframe]), default="H1")
+@click.option("--start-idx", type=int, default=0, help="First decision-candle index")
+@click.option("--count", type=int, default=20, help="Number of decision points to evaluate")
+@click.option("--step", type=int, default=1, help="Stride between decision points")
+@click.option("--horizon", type=int, default=50, help="Bars to score scenarios over")
+@click.option("--out", type=click.Path(file_okay=True, dir_okay=False), default="eval.jsonl")
+@click.option("--reject-dir", type=click.Path(file_okay=False, dir_okay=True), default=None)
+def evaluate(
+    symbol, provider_name, data_dir, style, broker_offset, keep_last_row,
+    decision_tf, start_idx, count, step, horizon, out, reject_dir,
+):
+    """Replay history, interpret each point with the LLM, and score the scenarios."""
+    timeframes, context_tfs, structure_tfs, decision_tf_enum = timeframes_for_style(style, decision_tf)
+
+    try:
+        from app.llm.client import get_llm_client
+        from app.eval.runner import run_evaluation
+        from app.eval.metrics import summarize
+
+        provider = build_provider(provider_name, data_dir, broker_offset, not keep_last_row)
+        client = get_llm_client()
+
+        click.echo(f"Evaluating {symbol}: {count} points from idx {start_idx} (step {step}, horizon {horizon})")
+        records = run_evaluation(
+            provider=provider, symbol=symbol, client=client,
+            timeframes=timeframes, decision_timeframe=decision_tf_enum,
+            context_timeframes=context_tfs, structure_timeframes=structure_tfs,
+            start_idx=start_idx, count=count, step=step, horizon_bars=horizon,
+            reject_dir=reject_dir, out_path=out,
+        )
+
+        report = summarize(records)
+        click.echo("\n=== Evaluation summary ===")
+        for k, v in report.items():
+            click.echo(f"  {k}: {v}")
+        click.echo(f"\nRecords written to {out}")
+    except Exception as e:
+        click.echo(f"\n[ERROR] {e}", err=True)
+        raise click.Abort()
+
+
 if __name__ == "__main__":
     cli()
